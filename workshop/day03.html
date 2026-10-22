@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Day 3 MCP 文獻雷達</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;700&display=swap">
+<style>
+
+
+:root{
+  --paper:#F6EEDD; --card:#FFFBF2; --ink:#1B2420; --muted:#5B655F;
+  --green:#1F4A3A; --green-ink:#F6EEDD; --gold:#C99A2E; --gold-soft:#F2E3B8;
+  --navy:#1C2B3A; --navy-ink:#EEF1F4; --line:#E0D3B6;
+  --ok:#24704F; --ok-soft:#DCEFE3; --warn:#B23A2B; --warn-soft:#F7DDD7;
+  --font-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+  --base:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111A15; --card:#18241E; --ink:#ECE5D4; --muted:#A7B0A8;
+    --green:#0E2E22; --green-ink:#F1E9D6; --gold:#E2B85A; --gold-soft:#3A3120;
+    --navy:#0F1B27; --navy-ink:#E4E9EE; --line:#2C3D33;
+    --ok:#7FD0A6; --ok-soft:#1C3A2B; --warn:#F09A86; --warn-soft:#3D221D; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111A15; --card:#18241E; --ink:#ECE5D4; --muted:#A7B0A8;
+  --green:#0E2E22; --green-ink:#F1E9D6; --gold:#E2B85A; --gold-soft:#3A3120;
+  --navy:#0F1B27; --navy-ink:#E4E9EE; --line:#2C3D33;
+  --ok:#7FD0A6; --ok-soft:#1C3A2B; --warn:#F09A86; --warn-soft:#3D221D; color-scheme:dark;
+}
+:root[data-proj="on"]{--base:20px}
+*{box-sizing:border-box}
+html{font-size:var(--base);scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:1rem;line-height:1.75;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+a{color:var(--ok)}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:48rem;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance}
+p{margin:0 0 .9rem}
+header.top{padding-block:2.4rem 1.6rem}
+.eyebrow{font-size:.82rem;letter-spacing:.1em;color:var(--ok);font-weight:700}
+h1{font-size:2.15rem;line-height:1.3;margin:.35rem 0 .7rem;font-weight:900}
+.lede{font-size:1.06rem;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:.3rem 1.2rem;font-size:.88rem;color:var(--muted)}
+.tools{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.1rem;align-items:center}
+.chip{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:.3rem 1rem;font-size:.92rem}
+.chip[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.mycards{display:inline-flex;align-items:center;gap:.6rem;background:var(--navy);color:var(--navy-ink);border:2px solid var(--gold);border-radius:999px;padding:.4rem 1.1rem;font-weight:700;text-decoration:none}
+.mycards .cnt{background:var(--gold);color:var(--navy);border-radius:999px;padding:0 .55rem;font-size:.85rem;font-variant-numeric:tabular-nums}
+.band{background:var(--green);color:var(--green-ink);margin-top:2.2rem;scroll-margin-top:0}
+.band .wrap{padding-block:1.6rem 1.4rem}
+.band .big{font-size:3.4rem;line-height:1.1;font-weight:900;color:var(--gold);letter-spacing:.04em;margin:0}
+.band .sub{font-size:1.25rem;font-weight:700;margin:.4rem 0 0}
+.band .tag{font-family:var(--font-mono);font-size:.8rem;color:var(--gold);opacity:.9;letter-spacing:.12em}
+section.blk{padding-block:1.8rem 1rem}
+.ask{background:var(--ok-soft);border-radius:12px;padding:1rem 1.1rem;margin:.6rem 0 1rem}
+.ask b{color:var(--ok)}
+.doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:1rem 0 .4rem}
+.door{background:var(--card);border:1.5px solid var(--line);border-top:5px solid var(--gold);border-radius:10px;padding:.8rem .9rem;min-width:0}
+.door .k{font-weight:700}
+.door .v{font-size:.85rem;color:var(--muted);word-break:break-all}
+.account{text-align:center;font-size:.92rem;color:var(--muted);margin:.2rem 0 1rem}
+.account b{color:var(--ink)}
+.tabs{display:flex;gap:.4rem;margin:.6rem 0;flex-wrap:wrap}
+.tab{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:.35rem 1rem}
+.tab[aria-selected="true"]{background:var(--navy);color:var(--navy-ink);border-color:var(--navy)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;vertical-align:top;padding:.55rem .6rem;border-bottom:1px solid var(--line)}
+th{font-size:.82rem;letter-spacing:.06em;color:var(--muted)}
+.pill{display:inline-block;font-size:.78rem;padding:.05rem .55rem;border-radius:999px;font-weight:700;white-space:nowrap}
+.pill.go{background:var(--ok-soft);color:var(--ok)}
+.pill.stay{background:var(--gold-soft);color:var(--ink)}
+.pill.sep{background:var(--warn-soft);color:var(--warn)}
+.note{font-size:.85rem;color:var(--muted)}
+.claim{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin:1rem 0 .4rem;padding:.8rem 1rem;border:2px dashed var(--gold);border-radius:12px}
+.claim button{background:var(--navy);color:var(--navy-ink);border:0;border-radius:999px;padding:.35rem 1.1rem;font-weight:700}
+.claim button[aria-pressed="true"]{background:var(--gold);color:var(--navy)}
+.claim span{font-size:.9rem;color:var(--muted)}
+.app{font-size:1.3rem;font-weight:900;margin:1.4rem 0 .4rem;display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap}
+.app small{font-size:.85rem;font-weight:500;color:var(--muted)}
+.steps{list-style:none;margin:.6rem 0 0;padding:0;display:grid;gap:.8rem}
+.step{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:1rem 1.1rem;min-width:0}
+.step h3{margin:0 0 .35rem;font-size:1.05rem;display:flex;gap:.5rem;align-items:baseline}
+.sn{font-family:var(--font-mono);color:var(--gold);font-weight:700}
+.step > p:last-child{margin-bottom:0}
+.path{font-family:var(--font-mono);font-size:.84rem;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:.08rem .45rem;display:inline-block;margin:.1rem 0;word-break:break-word}
+.why{font-size:.9rem;color:var(--muted)}
+.done{font-size:.88rem;border-left:4px solid var(--ok);padding-left:.6rem;margin-top:.5rem}
+.os-win,.os-mac{display:none}
+:root[data-os="win"] .os-win{display:block}
+:root[data-os="mac"] .os-mac{display:block}
+.osbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;font-size:.9rem;margin:.4rem 0}
+.copybox{position:relative;background:var(--paper);border:1.5px dashed var(--ok);border-radius:10px;margin:.6rem 0;min-width:0}
+.copybox pre{margin:0;padding:.8rem .9rem 2.5rem;white-space:pre-wrap;word-break:break-word;font-family:var(--font-body);font-size:.93rem;line-height:1.7}
+.copybtn{position:absolute;right:.5rem;bottom:.5rem;border:0;background:var(--ok);color:var(--card);border-radius:8px;padding:.2rem .8rem;font-size:.85rem;max-width:calc(100% - 1rem)}
+.copybtn.ok{background:var(--gold);color:var(--navy)}
+.minichk{margin-top:1rem;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:.8rem 1rem}
+.minichk .hd{font-weight:700;margin-bottom:.2rem}
+.minichk label{display:flex;gap:.5rem;align-items:flex-start;padding:.25rem 0;font-size:.95rem}
+.minichk input{margin-top:.45rem;accent-color:var(--ok);width:1.05rem;height:1.05rem;flex:none}
+.lines{display:grid;gap:.8rem}
+.line{display:grid;grid-template-columns:2.6rem minmax(0,1fr);gap:.7rem;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:1rem}
+.line .num{font-size:2rem;font-weight:900;color:var(--warn);line-height:1}
+.line h3{margin:0 0 .3rem;font-size:1.1rem}
+.builder{background:var(--card);border:2px solid var(--gold);border-radius:14px;padding:1rem 1.1rem;margin-top:.6rem}
+.bstep{display:grid;grid-template-columns:2rem minmax(0,1fr);gap:.6rem;align-items:start;padding:.7rem 0;border-bottom:1px dashed var(--line)}
+.bstep:last-child{border-bottom:0}
+.circ{width:1.8rem;height:1.8rem;border-radius:50%;background:var(--gold);color:var(--navy);display:grid;place-items:center;font-weight:900;font-size:.95rem}
+.bstep .lbl{font-weight:700;margin-bottom:.4rem}
+.taskchips{display:flex;flex-wrap:wrap;gap:.45rem}
+.taskchips .chip[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:var(--card)}
+.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem}
+.fields label{display:flex;flex-direction:column;gap:.25rem;font-size:.85rem;color:var(--muted);min-width:0}
+.fields input{font:inherit;font-size:.95rem;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:.45rem .6rem;min-width:0;width:100%}
+.fields input:focus{border-color:var(--ok);outline:none}
+.ptcf{border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--paper)}
+.prow{display:grid;grid-template-columns:5.5rem minmax(0,1fr);gap:.6rem;padding:.6rem .8rem;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
+.prow .k{font-weight:700;display:flex;gap:.4rem;align-items:baseline}
+.prow .k b{display:inline-grid;place-items:center;width:1.4rem;height:1.4rem;border-radius:4px;background:var(--navy);color:var(--navy-ink);font-size:.8rem;font-family:var(--font-mono)}
+.prow .v{font-size:.93rem;min-width:0;word-break:break-word}
+.fill{background:var(--ok-soft);color:var(--ok);font-weight:700;border-radius:4px;padding:0 .2rem}
+.miss{color:var(--warn);font-weight:700}
+.legend{font-size:.82rem;color:var(--muted);margin:.4rem 0 0}
+.actions{display:flex;flex-wrap:wrap;gap:.5rem}
+.btn{display:inline-flex;align-items:center;gap:.3rem;border-radius:8px;padding:.45rem 1rem;font-weight:700;text-decoration:none;border:1.5px solid var(--ok)}
+.btn.primary{background:var(--ok);color:var(--card)}
+.btn.ghost{background:transparent;color:var(--ok)}
+.status{font-size:.88rem;color:var(--ok);min-height:1.4em;margin-top:.4rem}
+.share{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);gap:.7rem;align-items:center;margin:1rem 0 .4rem}
+.agent{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:.8rem;text-align:center;min-width:0}
+.agent .k{font-weight:700}
+.agent .v{font-size:.82rem;color:var(--muted)}
+.arrow{font-size:.82rem;color:var(--ok);display:block}
+.folder{background:var(--gold-soft);border:2px solid var(--gold);border-radius:4px 14px 14px 14px;padding:.8rem 1rem;min-width:0}
+.folder .k{font-weight:700;margin-bottom:.3rem}
+.folder ul{margin:0;padding-left:1.1rem;font-size:.88rem}
+code{font-family:var(--font-mono);font-size:.86rem}
+.sync{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.4rem .6rem;margin:.8rem 0 1rem;font-size:.9rem}
+.sync .m{background:var(--card);border:1.5px solid var(--line);border-radius:999px;padding:.15rem .8rem}
+.sync .gh{background:var(--navy);color:var(--navy-ink);border-radius:999px;padding:.15rem .9rem;font-weight:700}
+.skills{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem;margin-top:1rem}
+.skill{perspective:900px;border:0;background:none;padding:0;text-align:left;color:inherit;min-width:0;display:grid}
+.skill .inner{position:relative;display:grid;min-height:13rem;transition:transform .5s;transform-style:preserve-3d}
+.skill[aria-pressed="true"] .inner{transform:rotateY(180deg)}
+.face{grid-area:1/1;position:relative;border-radius:14px;padding:1rem;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;background:var(--navy);color:var(--navy-ink);border:2px solid var(--gold)}
+.face.back{transform:rotateY(180deg);background:var(--card);color:var(--ink)}
+.face .no{font-size:2.2rem;font-weight:900;color:var(--gold);line-height:1;font-family:var(--font-mono)}
+.face .ttl{font-weight:900;font-size:1.05rem;margin:.5rem 0 .3rem}
+.face .one{font-size:.88rem;opacity:.9}
+.face .hint{margin-top:auto;font-size:.78rem;opacity:.75;text-align:right}
+.badge{position:absolute;top:.8rem;right:.8rem;font-size:.75rem;font-weight:700;border-radius:999px;padding:.05rem .6rem;background:var(--line);color:var(--ink)}
+.skill.on .badge{background:var(--gold);color:var(--navy)}
+.face.back .pts{display:block;margin-top:.2rem;font-size:.88rem;line-height:1.6}
+.face.back .pt{display:block;padding-left:1rem;position:relative}
+.face.back .pt::before{content:"・";position:absolute;left:0;color:var(--gold)}
+.skill:not(.on) .face.front{filter:saturate(.35);opacity:.85}
+.tip{font-size:1rem;font-weight:700;border-left:5px solid var(--gold);padding-left:.8rem;margin:1.2rem 0}
+.progress{display:flex;align-items:center;gap:.8rem;margin-top:1rem;font-size:.9rem;flex-wrap:wrap}
+.bar{flex:1;min-width:8rem;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar span{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+footer{padding-block:2rem 3rem;font-size:.85rem;color:var(--muted)}
+footer ul{padding-left:1.1rem;margin:.4rem 0}
+@media (max-width:720px){
+  h1{font-size:1.7rem}
+  .band .big{font-size:2.6rem}
+  .doors,.fields,.skills,.share{grid-template-columns:minmax(0,1fr)}
+  .prow{grid-template-columns:minmax(0,1fr);gap:.2rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+
+.navrow{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem;font-size:.9rem}
+.navrow a{color:var(--ok);font-weight:700}
+.quiz{display:grid;gap:.8rem;margin-top:.8rem}
+.qcard{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:1rem 1.1rem;min-width:0}
+.qcard.boss{border:2px solid var(--warn);background:linear-gradient(180deg,var(--warn-soft),var(--card) 40%)}
+.qcard .qn{font-family:var(--font-mono);font-size:.8rem;color:var(--gold);font-weight:700;letter-spacing:.08em}
+.qcard.boss .qn{color:var(--warn)}
+.qcard .qt{font-weight:700;margin:.2rem 0 .6rem}
+.qcard .qs{font-size:.9rem;color:var(--muted);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:.5rem .7rem;margin:-.2rem 0 .6rem;white-space:pre-wrap}
+.opts{display:flex;flex-wrap:wrap;gap:.45rem}
+.opts button{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:.35rem .9rem;text-align:left;font-size:.95rem;max-width:100%}
+.opts button:disabled{cursor:default}
+.opts button.right{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:700}
+.opts button.wrong{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.qcard .ans{margin-top:.6rem;font-size:.92rem;border-left:4px solid var(--ok);padding-left:.6rem}
+.qcard .ans.no{border-left-color:var(--warn)}
+.score{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin:.6rem 0 0;padding:.7rem 1rem;border:2px dashed var(--gold);border-radius:12px}
+.score b{font-family:var(--font-mono);font-size:1.1rem}
+.score .chip{font-size:.85rem}
+.openai{display:flex;flex-wrap:wrap;gap:.5rem;margin:.4rem 0 .8rem}
+
+
+.step .sub{margin:.3rem 0 .6rem;padding-left:1.4rem}
+.step .sub li{margin:.3rem 0;padding-left:.15rem}
+.step .sub li::marker{color:var(--gold);font-weight:700;font-family:var(--font-mono)}
+:root[data-os="win"] .step li.os-win,:root[data-os="mac"] .step li.os-mac{display:list-item}
+.see{font-size:.92rem;background:var(--ok-soft);border-radius:8px;padding:.45rem .7rem;margin:.4rem 0}
+.see b{color:var(--ok)}
+.stuck{font-size:.92rem;background:var(--warn-soft);border-radius:8px;padding:.45rem .7rem;margin:.4rem 0}
+.stuck b{color:var(--warn)}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<div class="eyebrow">AI 研究工具七日課・Day 3 / 7・MCP 文獻雷達</div>
+<h1>讓 AI 真的去查：用 MCP 連上學術資料庫</h1>
+<p class="lede">跟著現場做，也可以帶回家照著檢查。「做得到」每一步都拆成逐步點擊，附「你應該看到」和「卡住了」怎麼辦。每過一段就解鎖一張技能卡，「闖得過」要答對才拿得到；沒解鎖也能往下看，跟不上照樣往下走。</p>
+<div class="meta"><span>每次 3 小時・電腦教室</span><span>講師：陳文盛老師（國立東華大學通識教育中心）</span><span>選單名稱查核：2026-10-21（ChatGPT、Claude）／2026-10-19（其他）</span></div>
+<div class="tools"><a class="mycards" href="#bring">我的技能卡 <span class="cnt" id="cardCount">0 / 5</span></a><button type="button" class="chip" id="projBtn" aria-pressed="false">投影大字</button></div>
+<div class="osbar">你的電腦是：<button type="button" class="chip" data-os="win" aria-pressed="false">Windows</button><button type="button" class="chip" data-os="mac" aria-pressed="false">Mac</button><span class="note">步驟會跟著切換</span></div>
+<div class="navrow"><a href="../index.html">課程總覽</a><a href="../slides/day03.html">Day 3 投影片</a><span>上一天：Day 2 AI 三角檢證法</span></div>
+</header>
+</div>
+<div class="band" id="b1"><div class="wrap"><div class="tag">01・看得懂</div><p class="big">看得懂</p><p class="sub">AI 的萬用接頭</p></div></div>
+<section class="blk wrap">
+<div class="ask"><b>同學常問：</b>「AI 不是本來就會回答文獻問題嗎？為什麼還要接資料庫？」<br><b>答案：</b>沒接資料庫時，AI 是憑記憶「生成像論文的文字」，可能編造。接上學術連接器後，它先去資料庫查，再根據查到的結果回答，而且你看得到它查了什麼。</div>
+<div class="doors"><div class="door"><div class="k">雲端連接器</div><div class="v">在 Claude 設定裡點幾下<br>課堂主線，不用安裝</div></div><div class="door"><div class="k">本機 MCP server</div><div class="v">裝在自己電腦的開源程式<br>進階，只示範</div></div><div class="door"><div class="k">網頁資料庫</div><div class="v">OpenAlex、華藝、博碩士論文<br>沒有連接器時的備案</div></div></div>
+<p class="account">MCP（Model Context Protocol，模型上下文協定）是讓 AI 呼叫外部工具的開放標準</p>
+<div class="claim"><button type="button" data-claim="u1">我懂了，收下技能卡 01</button><span>說得出「憑記憶」和「接資料庫」差在哪。</span></div>
+</section>
+<div class="band" id="b2"><div class="wrap"><div class="tag">02・做得到</div><p class="big">做得到</p><p class="sub">拆問題、組搜尋式、開連接器</p></div></div>
+<section class="blk wrap"><ol class="steps">
+<li class="step"><h3><span class="sn">3-1</span>把研究問題拆成 2 到 3 個概念</h3><ol class="sub"><li>寫下你的研究問題，一句話。</li><li>圈出句子裡的 2 到 3 個名詞概念，例如「生成式 AI」「自主學習」「大學生」。</li><li>每個概念先寫你知道的中文說法。</li><li>用「用得上」的「搜尋策略」請 AI 補英文同義詞。</li><li>刪掉你領域裡不常用的說法，留下每個概念 3 到 6 個。</li></ol><p class="see"><b>你應該看到：</b>一張概念表：每個概念一欄，底下是中英文說法。</p><div class="done">完成判準：三個概念、每個至少三個英文說法。</div></li>
+<li class="step"><h3><span class="sn">3-2</span>組成布林搜尋式</h3><ol class="sub"><li>同一個概念的同義詞用 OR 連起來，外面加括號。</li><li>兩個字以上的片語加英文雙引號，例如 "generative AI"。</li><li>不同概念的括號之間用 AND 連起來。</li><li>把整條搜尋式貼到 <span class="path">pubmed.ncbi.nlm.nih.gov</span>（生醫護理）或 Google Scholar，看結果有幾筆。</li><li>太多就加一組 AND 條件；太少就在括號裡加 OR 同義詞。</li></ol><p class="see"><b>你應該看到：</b>結果數量落在你讀得完、又不會漏掉重點的範圍。</p><div class="done">完成判準：寫出一條完整的英文搜尋式。</div></li>
+<li class="step"><h3><span class="sn">3-3</span>選對資料庫</h3><ol class="sub"><li>生醫、護理、公衛：PubMed。</li><li>跨領域：OpenAlex（openalex.org，免費）。</li><li>想看論文被支持或被反駁：Scite（部分功能需訂閱）。</li><li>Wiley 期刊：Scholar Gateway（目前只有 Wiley 內容，需驗證）。</li><li>中文期刊與台灣學位論文：華藝線上圖書館、臺灣博碩士論文知識加值系統（網頁查，沒有連接器）。</li></ol><p class="see"><b>你應該看到：</b>你選了至少兩個資料庫，而且說得出為什麼。</p><div class="done">完成判準：選了至少兩個資料庫交叉查。</div></li>
+<li class="step"><h3><span class="sn">3-4</span>在 Claude 開啟連接器</h3><ol class="sub"><li>用 claude.ai 網頁或 Claude 桌面版操作。手機 app 目前不能新增連接器。</li><li><span class="path">設定 → 連接器</span>（Connectors）→「瀏覽連接器」（Browse connectors）。</li><li>搜尋要用的資料庫（例如 PubMed），點進去看說明，按「連接」（Connect）。</li><li>照畫面完成授權。</li><li>回到對話，在輸入框的「＋」或工具選單裡確認這個連接器是開的 ⚠️ 選單位置以畫面為準。</li></ol><p class="see"><b>你應該看到：</b>工具選單裡看得到這個連接器，開關是開的。</p><p class="stuck"><b>卡住了：</b>找不到、或畫面要求升級方案：免費方案可用範圍 ⚠️ 還沒確認。改用 PubMed 或 OpenAlex 網頁搜尋，把結果貼回給 AI 整理成表格。</p><div class="done">完成判準：輸入框的工具選單裡看得到這個連接器是開的。</div></li>
+<li class="step"><h3><span class="sn">3-5</span>下搜尋指令，確認它真的有查</h3><ol class="sub"><li>開一個新對話，貼上「用得上」的「文獻雷達」，大括號換成你的主題和搜尋式。</li><li>送出後，找回答裡的工具使用紀錄（通常會顯示用了哪個工具），點開看它下了什麼查詢、回傳幾筆。</li><li>第一輪條件寬一點，看看有多少。</li><li>第二輪加條件收窄，例如年份或研究設計。</li><li>每輪 20 篇以內，太多容易被截斷。</li></ol><p class="see"><b>你應該看到：</b>兩輪回答都有工具使用紀錄，表格的「用了哪個工具」欄有填。</p><p class="stuck"><b>卡住了：</b>整段回答都沒有工具紀錄：它是憑記憶寫的。在同一對話回「請只用已連接的資料庫工具重新搜尋」，或確認連接器真的開著。</p><div class="done">完成判準：兩輪回答都看得到工具使用紀錄。</div></li>
+<li class="step"><h3><span class="sn">3-6</span>整理成清單，抽 3 篇驗</h3><ol class="sub"><li>開一個試算表，第一列貼「用得上」的「清單欄位」。</li><li>把 AI 的表格複製貼上。擠成一欄時，用試算表的分欄功能，以「｜」為分隔符號。</li><li>依 DOI 排序，刪掉兩輪重複的。</li><li>中文文獻沒有 DOI 的，補上可以回查的網址。</li><li>隨機抽 3 篇，用 Day 2 的方法驗存在與書目。</li><li>存檔，Day 5 要用 DOI 匯入 Zotero。</li></ol><p class="see"><b>你應該看到：</b>一份 10 到 20 篇、七個欄位都有填的清單。</p><div class="done">完成判準：清單 10 篇以上，抽 3 篇驗過都存在。</div></li>
+</ol>
+<div class="minichk"><div class="hd">做完勾一勾（5 項全勾，解鎖技能卡 02）</div><label><input type="checkbox" id="c1">研究問題拆成概念與同義詞</label><label><input type="checkbox" id="c2">寫出一條布林搜尋式</label><label><input type="checkbox" id="c3">連接器開好，或改用 OpenAlex 網頁</label><label><input type="checkbox" id="c4">兩輪搜尋都看得到工具使用紀錄</label><label><input type="checkbox" id="c5">清單 10 篇以上，抽 3 篇驗過</label></div>
+</section>
+<div class="band" id="b3"><div class="wrap"><div class="tag">03・用得上</div><p class="big">用得上</p><p class="sub">兩段範本跑兩輪</p></div></div>
+<section class="blk wrap"><p>大括號 { } 換成你自己的內容。<b>複製任何一段，就解鎖技能卡 03。</b>今天練習請用公開文獻或範例資料，不要貼真的受試者資料。</p>
+<div class="openai"><a class="btn ghost" href="https://chatgpt.com" target="_blank" rel="noopener">打開 ChatGPT ↗</a><a class="btn ghost" href="https://claude.ai" target="_blank" rel="noopener">打開 Claude ↗</a><a class="btn ghost" href="https://gemini.google.com" target="_blank" rel="noopener">打開 Gemini ↗</a></div>
+<p class="app" style="font-size:1.05rem">搜尋策略：拆概念與搜尋式</p><div class="copybox"><pre id="p1">我的研究問題是：{問題}
+
+請幫我：
+1. 拆成 2 到 3 個核心概念。
+2. 每個概念列中英文同義詞（各 3 到 6 個）。
+3. 組成一條英文布林搜尋式（AND 連接概念、OR 連接同義詞、片語加引號）。
+4. 建議納入與排除條件（年份、研究設計、族群）。</pre><button type="button" class="copybtn" data-copy="p1">複製</button></div>
+<p class="app" style="font-size:1.05rem">文獻雷達（先開連接器）</p><div class="copybox"><pre id="p2">請只使用已連接的學術資料庫工具搜尋，不要憑記憶回答。
+
+主題：{主題}
+搜尋式：{布林式}
+條件：{年份} 年以後；研究設計：{實證研究}；語言：英文
+
+用表格回傳：作者｜年份｜題名｜期刊｜DOI｜一句話重點｜用了哪個工具。找不到符合條件的就直接說找不到，不要補。</pre><button type="button" class="copybtn" data-copy="p2">複製</button></div>
+<p class="app" style="font-size:1.05rem">清單欄位（貼到試算表第一列）</p><div class="copybox"><pre id="p3">作者｜年份｜題名｜期刊｜DOI 或網址｜一句話重點｜來源資料庫</pre><button type="button" class="copybtn" data-copy="p3">複製</button></div>
+</section>
+<div class="band" id="b4"><div class="wrap"><div class="tag">04・闖得過</div><p class="big">闖得過</p><p class="sub">搜尋式工坊</p></div></div>
+<section class="blk wrap"><p>搜尋式和資料庫的小測驗。答對 5 題以上解鎖技能卡 04。</p><div class="quiz" id="quiz"></div><div class="score"><span>答對 <b id="qRight">0</b> / 7</span><span class="note" id="qNote"></span><button type="button" class="chip" id="qReset">再挑戰一次</button></div></section>
+<div class="band" id="b5"><div class="wrap"><div class="tag">05・守得住</div><p class="big">守得住</p><p class="sub">資料庫查詢的三條線</p></div></div>
+<section class="blk wrap"><div class="lines">
+<div class="line"><div class="num">一</div><div><h3>只用工具查，沒紀錄就是憑記憶</h3><p>指令寫明「只用連接的資料庫」，回答要看得到工具使用紀錄。</p></div></div>
+<div class="line"><div class="num">二</div><div><h3>資料庫覆蓋有偏，交叉查</h3><p>PubMed 偏生醫、Scholar Gateway 只有 Wiley；中文文獻另查華藝與博碩士論文系統。</p></div></div>
+<div class="line"><div class="num">三</div><div><h3>本機程式先看權限</h3><p>第三方 MCP server 可以讀寫你的電腦，只裝有人維護、看得懂權限的。</p></div></div>
+</div><div class="claim"><button type="button" data-claim="u5">我記住了，收下技能卡 05</button><span>三條線說得出來。</span></div></section>
+<div class="band" id="bring"><div class="wrap"><div class="tag">06・帶得走</div><p class="big">帶得走</p><p class="sub">過一段解鎖一張，回家隨時打開</p></div></div>
+<section class="blk wrap"><div class="progress"><span id="progText">已解鎖 0 / 5</span><div class="bar"><span id="progBar"></span></div><button type="button" class="chip" id="resetBtn">全部重來</button></div><div class="skills" id="skills"></div>
+<p class="tip">課後作業</p><ul><li>交文獻清單（10 篇以上、含 DOI 或網址）和搜尋式。</li><li>回家寫 100 字：接上資料庫前後，存在率差多少？明天請先裝好 JASP、申請 OpenRouter 帳號。</li></ul>
+<p class="note">下一天：Day 4 JASP × OpenRouter。技能卡進度只存在這台瀏覽器，換電腦或清除瀏覽資料會歸零。</p>
+</section>
+<footer class="wrap"><p>國立東華大學 通識教育中心｜AI 研究工具七日課。版型沿用慈大長照所工作坊設定課。</p><p>⚠️ 選單名稱常改版：ChatGPT、Claude 依 2026-10-21 實機核對，其他工具依 2026-10-19 網查，以你看到的畫面為準。</p></footer>
+<script>
+var DATA={"n": 3, "quiz": [{"q": "同一個概念的幾個同義詞，要用哪個連起來？", "opts": ["AND", "OR", "NOT"], "a": 1, "why": "同義詞用 OR，任何一個出現都算。"}, {"q": "查出 3,000 篇，太多了。最直接的做法是？", "opts": ["加一組 AND 條件", "加更多 OR 同義詞", "把引號拿掉"], "a": 0, "why": "AND 越多，結果越少越精準。"}, {"q": "要搜「generative AI」這個片語，怎麼寫？", "opts": ["generative AI", "\"generative AI\"", "generative OR AI"], "a": 1, "why": "兩個字以上的片語加英文雙引號，才會當成一整個詞。"}, {"q": "想找台灣的碩博士論文，該去哪？", "opts": ["PubMed", "Scholar Gateway", "臺灣博碩士論文知識加值系統"], "a": 2, "why": "英文資料庫很少收台灣學位論文，要另外查。"}, {"q": "哪一個目前只包含 Wiley 出版社的內容？", "opts": ["OpenAlex", "Scholar Gateway", "PubMed"], "a": 1, "why": "Scholar Gateway 由 Wiley 提供，目前只含 Wiley 內容。"}, {"q": "本機 MCP server 在安裝前最該先看什麼？", "opts": ["圖示好不好看", "要求的權限與有沒有人維護", "下載次數夠不夠多"], "a": 1, "why": "它可以讀寫你的電腦，是第三方維護的程式。"}, {"q": "下面兩個回答，哪一個是真的查了資料庫？", "scene": "A：「▸ 使用工具：PubMed 搜尋　查詢：…　回傳：12 筆」接著列出文獻表格。\nB：直接列出一張格式完整的文獻表格，沒有任何工具紀錄。", "opts": ["A", "B", "兩個都有查"], "a": 0, "boss": true, "why": "看得到工具使用紀錄才算有查。B 格式再漂亮，也是憑記憶寫的。"}], "qpass": 5, "nchk": 5, "cards": [{"u": "u1", "no": "01", "ttl": "MCP 是接頭", "one": "讓 AI 先查再答", "back": ["雲端連接器：點幾下就好", "本機 server：進階、先看權限", "網頁資料庫：備案"]}, {"u": "u2", "no": "02", "ttl": "搜尋策略", "one": "概念、同義詞、布林式", "back": ["OR 連同義詞", "AND 連概念", "片語加引號", "太多加 AND、太少加 OR"]}, {"u": "u3", "no": "03", "ttl": "文獻雷達", "one": "兩輪搜尋＋七欄清單", "back": ["只用工具，不憑記憶", "寬一輪、窄一輪", "七欄清單，DOI 必填"]}, {"u": "u4", "no": "04", "ttl": "資料庫地圖", "one": "知道去哪裡找", "back": ["PubMed：生醫護理", "Scholar Gateway：Wiley", "OpenAlex：跨領域", "中文：華藝、博碩士論文"]}, {"u": "u5", "no": "05", "ttl": "查詢三條線", "one": "紀錄、交叉、權限", "back": ["沒紀錄就是憑記憶", "兩個以上資料庫交叉", "本機程式先看權限"]}]};
+
+(function(){
+  var root=document.documentElement, KEY='air7-ws-d'+DATA.n;
+  function get(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  var st={};try{st=JSON.parse(get(KEY)||'{}')||{}}catch(e){st={}}
+  if(!st.q)st.q={};
+  function save(){set(KEY,JSON.stringify(st))}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+  var os=get('air7-os')||(/Mac/i.test(navigator.platform||'')?'mac':'win');
+  function setOS(v){root.dataset.os=v;document.querySelectorAll('button[data-os]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.os===v))});set('air7-os',v)}
+  document.querySelectorAll('button[data-os]').forEach(function(b){b.addEventListener('click',function(){setOS(b.dataset.os)})});setOS(os);
+  var pb=document.getElementById('projBtn');
+  function setProj(on){if(on){root.dataset.proj='on'}else{delete root.dataset.proj}pb.setAttribute('aria-pressed',String(on));set('air7-proj',on?'1':'0')}
+  pb.addEventListener('click',function(){setProj(root.dataset.proj!=='on')});setProj(get('air7-proj')==='1');
+
+  var isMac=/Mac/i.test(navigator.platform||'');
+  function copyText(text,onok,onfail){
+    function fallback(){var ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);ok?onok():onfail()}
+    try{navigator.clipboard.writeText(text).then(onok,fallback)}catch(e){fallback()}
+  }
+  document.querySelectorAll('.copybtn').forEach(function(btn){btn.addEventListener('click',function(){
+    var el=document.getElementById(btn.dataset.copy);
+    st.copied=true;save();updateCards();
+    copyText(el.textContent,function(){btn.textContent='已複製';btn.classList.add('ok');st.copied=true;save();updateCards();setTimeout(function(){btn.textContent='複製';btn.classList.remove('ok')},1600)},
+      function(){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent=isMac?'已選取，請按 Command＋C':'已選取，請按 Ctrl＋C';st.copied=true;save();updateCards();setTimeout(function(){btn.textContent='複製'},4000)});
+  })});
+
+  // 闖得過
+  var qbox=document.getElementById('quiz');
+  function right(){var r=0;DATA.quiz.forEach(function(q,i){if(st.q[i]===q.a)r++});return r}
+  function renderQuiz(){
+    qbox.innerHTML=DATA.quiz.map(function(q,i){
+      var my=st.q[i], done=(my!==undefined);
+      var opts=q.opts.map(function(o,k){var cls='';if(done){if(k===q.a)cls='right';else if(k===my)cls='wrong'}
+        return '<button type="button" data-q="'+i+'" data-k="'+k+'" class="'+cls+'"'+(done?' disabled':'')+'>'+esc(o)+'</button>'}).join('');
+      var ans=done?'<div class="ans'+(my===q.a?'':' no')+'">'+(my===q.a?'答對了。':'正解是「'+esc(q.opts[q.a])+'」。')+esc(q.why)+'</div>':'';
+      return '<div class="qcard'+(q.boss?' boss':'')+'"><div class="qn">'+(q.boss?'魔王題':'第 '+(i+1)+' 題')+'</div><div class="qt">'+esc(q.q)+'</div>'+
+        (q.scene?'<div class="qs">'+esc(q.scene)+'</div>':'')+'<div class="opts">'+opts+'</div>'+ans+'</div>';
+    }).join('');
+    var r=right(), all=Object.keys(st.q).length===DATA.quiz.length;
+    document.getElementById('qRight').textContent=r;
+    document.getElementById('qNote').textContent= r>=DATA.qpass ? '過關！技能卡 04 已解鎖' : (all ? '還差 '+(DATA.qpass-r)+' 題，按「再挑戰一次」重來' : '答對 '+DATA.qpass+' 題解鎖技能卡 04');
+  }
+  qbox.addEventListener('click',function(e){var b=e.target.closest('button[data-q]');if(!b||b.disabled)return;
+    st.q[+b.dataset.q]=+b.dataset.k;save();renderQuiz();updateCards()});
+  document.getElementById('qReset').addEventListener('click',function(){st.q={};save();renderQuiz();updateCards()});
+
+  // 技能卡
+  var grid=document.getElementById('skills');
+  DATA.cards.forEach(function(c){
+    var b=document.createElement('button');b.type='button';b.className='skill';b.id='card-'+c.u;b.setAttribute('aria-pressed','false');
+    b.innerHTML='<span class="inner"><span class="face front"><span class="badge">未解鎖</span><span class="no">'+c.no+'</span><span class="ttl">'+esc(c.ttl)+'</span><span class="one">'+esc(c.one)+'</span><span class="hint">點我翻面</span></span><span class="face back"><span class="ttl">'+esc(c.ttl)+'</span><span class="pts">'+c.back.map(function(x){return '<span class="pt">'+esc(x)+'</span>'}).join('')+'</span><span class="hint">再點一下翻回來</span></span></span>';
+    b.addEventListener('click',function(){b.setAttribute('aria-pressed',String(b.getAttribute('aria-pressed')!=='true'))});
+    grid.appendChild(b);
+  });
+  function unlocked(u){
+    if(u==='u2'){for(var i=1;i<=DATA.nchk;i++){if(!st['c'+i])return false}return true}
+    if(u==='u3')return !!st.copied;
+    if(u==='u4')return right()>=DATA.qpass;
+    return !!st[u];
+  }
+  function updateCards(){
+    var n=0;DATA.cards.forEach(function(c){var on=unlocked(c.u);var el=document.getElementById('card-'+c.u);el.classList.toggle('on',on);el.querySelector('.badge').textContent=on?'已解鎖':'未解鎖';if(on)n++});
+    document.getElementById('progText').textContent='已解鎖 '+n+' / 5';document.getElementById('progBar').style.width=(n/5*100)+'%';
+    document.getElementById('cardCount').textContent=n+' / 5';
+  }
+  function claimLabel(b){var on=b.getAttribute('aria-pressed')==='true';b.textContent=on?'已收下技能卡 '+b.dataset.claim.slice(1).padStart(2,'0')+' ✓':b.dataset.label}
+  document.querySelectorAll('[data-claim]').forEach(function(b){var u=b.dataset.claim;b.dataset.label=b.textContent;b.setAttribute('aria-pressed',String(!!st[u]));claimLabel(b);
+    b.addEventListener('click',function(){st[u]=!st[u];b.setAttribute('aria-pressed',String(st[u]));claimLabel(b);save();updateCards()})});
+  document.querySelectorAll('.minichk input').forEach(function(i){i.checked=!!st[i.id];i.addEventListener('change',function(){st[i.id]=i.checked;save();updateCards()})});
+  document.getElementById('resetBtn').addEventListener('click',function(){st={q:{}};save();document.querySelectorAll('.minichk input').forEach(function(i){i.checked=false});document.querySelectorAll('[data-claim]').forEach(function(b){b.setAttribute('aria-pressed','false');claimLabel(b)});renderQuiz();updateCards()});
+  renderQuiz();updateCards();
+})();
+
+</script>
+</body>
+</html>

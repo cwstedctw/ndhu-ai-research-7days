@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>AI 研究工具七日課</title>
+<meta name="description" content="七天把 AI 練成可靠的學術研究助理：設定、檢證、找文獻、統計解讀、引用、閱讀整理到 Agent 工作流。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;800&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+
+:root{
+  --bg:#F7F2E6;          
+  --surface:#FFFDF7;
+  --ink:#1A1A1A;         
+  --muted:#5D6463;
+  --line:#DCD3BF;
+  --teal:#0E7C7B;        
+  --teal-soft:#D5EBE8;
+  --gold:#B07F1E;        
+  --gold-soft:#F3E3BC;
+  --ok:#2F7D4A; --warn:#A56A00; --bad:#B23A3A;
+  --ok-soft:#DDEFE2; --warn-soft:#F7E8C8; --bad-soft:#F5DADA;
+  --code-bg:#EFE8D6;
+  --f-display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1C1C; --surface:#152626; --ink:#ECE6D8; --muted:#A3ADAB; --line:#2C4241;
+    --teal:#56B9B5; --teal-soft:#1D3B3A; --gold:#E2B860; --gold-soft:#3A3120;
+    --ok:#6FCB8E; --warn:#E8B24E; --bad:#F08C8C; --ok-soft:#1C3826; --warn-soft:#3A2F17; --bad-soft:#3E2121;
+    --code-bg:#1B2F2F; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1C1C; --surface:#152626; --ink:#ECE6D8; --muted:#A3ADAB; --line:#2C4241;
+  --teal:#56B9B5; --teal-soft:#1D3B3A; --gold:#E2B860; --gold-soft:#3A3120;
+  --ok:#6FCB8E; --warn:#E8B24E; --bad:#F08C8C; --ok-soft:#1C3826; --warn-soft:#3A2F17; --bad-soft:#3E2121;
+  --code-bg:#1B2F2F; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.75;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+a{color:var(--teal);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:4px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.3;margin:0}
+h2{font-size:1.6rem}
+h3{font-size:1.15rem}
+.eyebrow{font-size:.8rem;letter-spacing:.12em;color:var(--teal);font-weight:700}
+.muted{color:var(--muted)}
+small,.small{font-size:.875rem}
+.warnmark{color:var(--warn);font-weight:700}
+
+
+header.hero{padding-block:48px 28px;border-bottom:1px solid var(--line)}
+.hero h1{font-size:clamp(2rem,5vw,3.1rem);font-weight:800;letter-spacing:.02em}
+.hero h1 span{color:var(--teal)}
+.hero p.lead{font-size:1.1rem;max-width:40em;margin:14px 0 0}
+.hero .meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:18px;font-size:.9rem;color:var(--muted)}
+.theme-btn{float:right;margin-top:4px;background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:4px 12px;font:inherit;font-size:.85rem;cursor:pointer}
+
+section{padding-block:40px;border-bottom:1px solid var(--line)}
+section > .head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:20px}
+
+
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.info > div{padding:16px 18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.info dt{font-size:.8rem;letter-spacing:.08em;color:var(--teal);font-weight:700}
+.info dd{margin:4px 0 0}
+.note{margin-top:12px;font-size:.875rem;color:var(--muted)}
+
+
+.river{position:relative;margin-top:8px}
+.river svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.stops{position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.stop{background:none;border:0;padding:8px 4px 10px;cursor:pointer;color:inherit;font:inherit;text-align:center;border-radius:8px;min-width:0}
+.stop .dot{width:46px;height:46px;margin:0 auto 8px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:1.05rem;background:var(--surface);border:2px solid var(--teal);color:var(--teal);transition:transform .2s}
+.stop .t{display:block;font-size:.82rem;line-height:1.4;font-weight:500}
+.stop:hover .dot{transform:translateY(-2px)}
+.stop[aria-selected="true"] .dot{background:var(--teal);color:var(--surface)}
+.stop.done .dot{border-color:var(--ok);box-shadow:0 0 0 3px var(--ok-soft)}
+.stop[aria-selected="true"] .t{color:var(--teal);font-weight:700}
+.thread{margin-top:14px;display:flex;gap:10px;align-items:center;font-size:.9rem;background:var(--gold-soft);border-radius:8px;padding:10px 14px}
+.thread b{color:var(--gold);white-space:nowrap;flex:0 0 auto}
+@media (max-width:720px){
+  .stops{grid-template-columns:repeat(4,1fr);row-gap:14px}
+  .river svg{display:none}
+}
+
+
+.day{margin-top:26px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.day-top{padding:24px 24px 0}
+.day-top .eyebrow{display:block;margin-bottom:6px}
+.day-top h3{font-size:1.5rem}
+.day-top .thesis{margin:10px 0 0;max-width:46em}
+.day-top .outcome b{white-space:nowrap}
+.slides-link{display:inline-block;margin-top:12px;margin-left:6px;font-size:.9rem;font-weight:700;color:var(--surface);background:var(--teal);border-radius:6px;padding:4px 12px;text-decoration:none}
+.slides-link:hover{opacity:.9}
+.slides-link.ws{background:var(--gold);color:var(--surface)}
+.day-top .outcome{display:inline-flex;gap:8px;margin-top:12px;font-size:.9rem;background:var(--teal-soft);border-radius:6px;padding:4px 10px}
+.tabs{display:flex;gap:2px;overflow-x:auto;padding:18px 24px 0;border-bottom:1px solid var(--line);scrollbar-width:thin}
+.tab{flex:0 0 auto;background:none;border:0;border-bottom:3px solid transparent;padding:8px 12px;font:inherit;font-size:.92rem;color:var(--muted);cursor:pointer}
+.tab[aria-selected="true"]{color:var(--teal);border-bottom-color:var(--teal);font-weight:700}
+.pane{padding:22px 24px 26px;min-width:0}
+.pane ul,.pane ol{padding-left:1.3em;margin:0}
+.pane li{margin-bottom:6px}
+.pane li::marker{color:var(--teal)}
+.pane h4{font-family:var(--f-display);font-size:1.02rem;margin:18px 0 8px}
+.pane h4:first-child{margin-top:0}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.cols > *{min-width:0}
+
+.timeline{display:grid;grid-template-columns:auto 1fr;gap:0;border-left:2px solid var(--teal-soft);margin-left:6px}
+.timeline .row{display:contents}
+.timeline .min{font-family:var(--f-mono);font-size:.85rem;color:var(--teal);padding:6px 12px 6px 14px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.timeline .what{padding:6px 0;min-width:0}
+.timeline .what b{display:block}
+
+.steps{counter-reset:s;list-style:none;padding:0!important}
+.steps > li{counter-increment:s;position:relative;padding-left:40px;margin-bottom:14px}
+.steps > li::before{content:counter(s);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:50%;background:var(--teal-soft);color:var(--teal);font-weight:700;display:grid;place-items:center;font-size:.85rem}
+.steps > li b{display:block}
+
+.tool{border-top:1px solid var(--line);padding:10px 0}
+.tool:first-child{border-top:0;padding-top:0}
+.tool b{font-size:1rem}
+.chip{display:inline-block;font-size:.75rem;padding:1px 8px;border-radius:999px;margin-left:6px;vertical-align:2px;white-space:nowrap}
+.chip.free{background:var(--ok-soft);color:var(--ok)}
+.chip.paid{background:var(--warn-soft);color:var(--warn)}
+.chip.check{background:var(--bad-soft);color:var(--bad)}
+
+.prompt{border:1px solid var(--line);border-radius:8px;margin-bottom:14px;overflow:hidden}
+.prompt-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:var(--teal-soft)}
+.prompt-h b{font-size:.92rem}
+.copy{background:var(--surface);border:1px solid var(--teal);color:var(--teal);border-radius:6px;padding:2px 10px;font:inherit;font-size:.82rem;cursor:pointer;flex:0 0 auto}
+.copy.done{background:var(--teal);color:var(--surface)}
+pre{margin:0;padding:12px 14px;background:var(--code-bg);font-family:var(--f-mono);font-size:.84rem;line-height:1.7;white-space:pre-wrap;word-break:break-word;overflow-x:auto}
+.pit{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;margin-bottom:10px}
+.pit .tag{font-size:.75rem;font-weight:700;color:var(--bad);background:var(--bad-soft);padding:1px 8px;border-radius:4px;height:fit-content;margin-top:4px}
+.pit .fix{grid-column:2;color:var(--muted);font-size:.92rem}
+.check-list{list-style:none;padding:0!important}
+.check-list li{display:flex;gap:10px;align-items:flex-start}
+.check-list input{margin-top:6px;accent-color:var(--teal);width:16px;height:16px;flex:0 0 auto}
+.donebar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:14px 24px;border-top:1px solid var(--line);background:var(--bg);font-size:.9rem}
+.btn{background:var(--teal);color:var(--surface);border:0;border-radius:6px;padding:6px 14px;font:inherit;font-size:.9rem;cursor:pointer}
+.btn.ghost{background:none;color:var(--teal);border:1px solid var(--teal)}
+.links a{margin-right:14px;white-space:nowrap}
+
+
+.quiz{display:grid;gap:14px}
+.q{border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:var(--surface)}
+.q p{margin:0 0 10px}
+.q .opts{display:flex;flex-wrap:wrap;gap:8px}
+.q .opts button{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:4px 12px;cursor:pointer}
+.q .opts button.right{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:700}
+.q .opts button.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.q .why{margin-top:10px;font-size:.92rem;color:var(--muted)}
+.score{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--teal)}
+
+
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.filters button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:3px 12px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:var(--surface)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:.9rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;letter-spacing:.06em;color:var(--teal);background:var(--bg);font-weight:700}
+tr:last-child td{border-bottom:0}
+td.days{font-family:var(--f-mono);font-size:.82rem;white-space:nowrap}
+
+
+.prep{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.prep > div{min-width:0}
+.meter{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin:6px 0 14px}
+.meter i{display:block;height:100%;background:var(--teal);width:0;transition:width .3s}
+
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0;border-top:1px solid var(--line)}
+.rules > div{padding:16px 18px 16px 0;border-bottom:1px solid var(--line);min-width:0}
+.rules b{display:block;font-family:var(--f-display);font-size:1.02rem;margin-bottom:4px}
+
+details.src{border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:10px 16px}
+details.src summary{cursor:pointer;font-weight:700}
+details.src li{font-size:.9rem}
+footer{padding-block:28px 48px;font-size:.85rem;color:var(--muted)}
+
+@media (max-width:560px){
+  .day-top,.pane{padding-left:16px;padding-right:16px}
+  .tabs{padding-left:12px;padding-right:12px}
+  .donebar{padding-left:16px;padding-right:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <button class="theme-btn" id="themeBtn" type="button">切換深淺色</button>
+  <div class="eyebrow">研究方法 × AI 工具｜七次課</div>
+  <h1>AI 研究工具<span>七日課</span></h1>
+  <p class="lead">七天，把 AI 從「會聊天的工具」練成「可以信任、可以查核」的研究助理。每一天都學一個工具，也都在練同一件事：AI 給的東西，你要能自己驗。</p>
+  <div class="meta">
+    <span>授課：陳文盛（國立東華大學 通識教育中心）</span>
+    <span>教材版本：2026-10-19</span>
+  </div>
+</header>
+
+<section id="info" aria-labelledby="info-h">
+  <div class="head">
+    <h2 id="info-h">課程基本資訊</h2>
+    <span class="muted small">時數與對象為預設值，實際以開課公告為準</span>
+  </div>
+  <dl class="info">
+    <div><dt>適合誰</dt><dd>研究生、教師、研究助理。不分領域，有一個正在進行或想做的研究題目最好。</dd></div>
+    <div><dt>上課形式</dt><dd>七次，每次 3 小時：講解約 40 分鐘、示範 30 分鐘、動手 80 分鐘、檢核分享 30 分鐘。</dd></div>
+    <div><dt>先備能力</dt><dd>會用瀏覽器、Word、上傳檔案。不需要寫程式，也不需要統計背景（Day 4 用範例資料）。</dd></div>
+    <div><dt>要帶什麼</dt><dd>筆電、自己的研究題目一句話、自己領域 3 到 5 篇 PDF 論文。</dd></div>
+    <div><dt>最後成果</dt><dd>一份「我的 AI 研究工作流」：設定卡、檢證紀錄、文獻清單、統計解讀、附引用的段落、研究筆記本、文獻探討初稿。</dd></div>
+    <div><dt>評量方式（建議）</dt><dd>每日小作業 60%、期末文獻探討初稿＋檢證紀錄 40%。重點看「有沒有查證」，不看文筆。</dd></div>
+  </dl>
+  <p class="note">⚠️ 工具版本與選單名稱改得很快。本頁的工具事實查證於 2026-10-19，上課當天請以畫面為準；頁尾有查證來源。</p>
+</section>
+
+<section id="map" aria-labelledby="map-h">
+  <div class="head">
+    <h2 id="map-h">七天課程地圖</h2>
+    <span class="muted small">點一天看細節；完成的那天會亮綠圈（只存在你這台瀏覽器）</span>
+  </div>
+  <div class="river">
+    <svg viewBox="0 0 700 60" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M25 31 C 75 14, 105 46, 150 31 S 230 16, 250 31 S 330 46, 350 31 S 430 16, 450 31 S 530 46, 550 31 S 630 16, 675 31" fill="none" stroke="var(--teal-soft)" stroke-width="6" stroke-linecap="round"/>
+    </svg>
+    <div class="stops" role="tablist" aria-label="七天" id="stops"></div>
+  </div>
+  <div class="thread"><b>貫穿七天</b><span>Day 2 的三角檢證不是只有那一天用。之後每一天的練習，最後一步都是「把 AI 的產出拿去驗」。</span></div>
+
+  <article class="day" id="dayPanel" aria-live="polite"></article>
+</section>
+
+<section id="quiz" aria-labelledby="quiz-h">
+  <div class="head">
+    <h2 id="quiz-h">檢證小測驗：這條 AI 給的引用，能用嗎？</h2>
+    <span class="score" id="quizScore">0 / 5</span>
+  </div>
+  <p class="muted" style="margin-top:-8px">Day 2 的課堂暖身。每題選一個判斷，看解說。</p>
+  <div class="quiz" id="quizBox"></div>
+</section>
+
+<section id="tools" aria-labelledby="tools-h">
+  <div class="head">
+    <h2 id="tools-h">工具速查表</h2>
+    <div class="filters" id="toolFilters" role="group" aria-label="篩選">
+      <button type="button" data-f="all" aria-pressed="true">全部</button>
+      <button type="button" data-f="free" aria-pressed="false">免費可用</button>
+      <button type="button" data-f="paid" aria-pressed="false">需付費或依方案</button>
+    </div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>工具</th><th>哪幾天</th><th>費用</th><th>帳號與安裝</th><th>隱私與注意</th></tr></thead>
+    <tbody id="toolRows"></tbody>
+  </table></div>
+</section>
+
+<section id="prep" aria-labelledby="prep-h">
+  <div class="head">
+    <h2 id="prep-h">課前準備清單</h2>
+    <span class="muted small">勾選會記在你這台瀏覽器</span>
+  </div>
+  <div class="prep">
+    <div>
+      <h3>帳號</h3>
+      <div class="meter" aria-hidden="true"><i id="m-acc"></i></div>
+      <ul class="check-list" id="prep-acc"></ul>
+    </div>
+    <div>
+      <h3>安裝與素材</h3>
+      <div class="meter" aria-hidden="true"><i id="m-ins"></i></div>
+      <ul class="check-list" id="prep-ins"></ul>
+    </div>
+  </div>
+  <p class="note">學校帳號（@gms.ndhu.edu.tw）的部分 AI 功能可能被管理端關閉，建議 Google 相關工具先用個人 Gmail。⚠️ 東華帳號能否使用 Gemini 筆記本、ChatGPT for Word，課前由講師實測後公告。</p>
+</section>
+
+<section id="ethics" aria-labelledby="ethics-h">
+  <div class="head"><h2 id="ethics-h">研究誠信五條守則</h2></div>
+  <div class="rules">
+    <div><b>1. 引用只從資料庫來</b>參考文獻一律經由 Zotero 或資料庫匯入。AI 打出來的書目，查到原文前都當作不存在。</div>
+    <div><b>2. 數字不經 AI 轉手</b>統計數字從 JASP 輸出原樣抄。請 AI 解讀時，叫它不准改數字，改完再對一次。</div>
+    <div><b>3. 個資與未發表資料不上傳</b>受訪者資料、IRB 限制的資料、別人未發表的稿件，不貼進任何 AI。要練習就用公開或去識別的資料。</div>
+    <div><b>4. 寫出你用了什麼</b>依學校與投稿期刊規定揭露 AI 使用：哪個工具、做了哪一步。AI 不能列為作者。</div>
+    <div><b>5. 最後一句話是你寫的</b>論點、詮釋與結論由你負責。AI 可以幫你找、幫你整理、幫你挑毛病，判斷要留給你。</div>
+  </div>
+</section>
+
+<section id="sources" aria-labelledby="src-h" style="border-bottom:0">
+  <div class="head"><h2 id="src-h">工具事實查證來源</h2></div>
+  <details class="src">
+    <summary>2026-10-19 查證紀錄與待實測項目（點開）</summary>
+    <ul>
+      <li>ChatGPT for Word：OpenAI 說明中心，Word 側邊欄外掛、所有方案含免費版、從 Microsoft Marketplace 安裝、組織需管理員允許、對話與一般 ChatGPT 紀錄分開。<a href="https://help.openai.com/en/articles/20001526" target="_blank" rel="noopener">來源</a></li>
+      <li>Gemini 筆記本：Google 於 2026-04 推出，與 NotebookLM 雙向同步，先開放付費方案網頁版。<a href="https://blog.google/innovation-and-ai/products/gemini-app/notebooks-gemini-notebooklm/" target="_blank" rel="noopener">來源</a></li>
+      <li>JASP AI 助理：新版在偏好設定填入 API key 後啟用，支援 OpenAI 相容 API（含 OpenRouter）。⚠️ 版本號與選單位置待課前安裝實測。<a href="https://jasp-stats.org" target="_blank" rel="noopener">JASP 官網</a></li>
+      <li>Zotero 8：2026-01-22 發布，Word 外掛改為統一的引用對話框。<a href="https://www.zotero.org/blog/zotero-8/" target="_blank" rel="noopener">來源</a></li>
+      <li>Claude 學術連接器：PubMed（隨 Claude for Life Sciences 推出）、Scholar Gateway（Wiley，目前只含 Wiley 內容、需驗證）、Scite 等列於連接器目錄。⚠️ 哪些方案可用待實測。<a href="https://claude.com/marketplace/connectors/scholar-gateway" target="_blank" rel="noopener">Scholar Gateway</a></li>
+      <li>MCP（Model Context Protocol）：開放標準。<a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">官方文件</a></li>
+      <li>七天投影片與闖關頁：每一天面板上方的「看投影片」「進入闖關頁」按鈕。闖關頁沿用慈大長照所工作坊設定課版型（技能卡、挑戰題）。ChatGPT、Claude 選單名稱依該設定課 2026-10-21 實機核對。投影片頁面目前是私人連結，分享給學生前要先從該頁的 Share 選單開放。</li>
+      <li class="warnmark">待實測：東華學校帳號能否用 Gemini 筆記本與 ChatGPT for Word；JASP 版本選單；OpenRouter 免費模型當天清單；Claude 連接器在免費方案的可用範圍。</li>
+    </ul>
+  </details>
+</section>
+
+<footer>
+  國立東華大學 通識教育中心｜AI 研究工具七日課 教材。課堂使用，引用請註明出處。
+</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var store={
+  get:function(k,d){try{var v=localStorage.getItem("air7:"+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},
+  set:function(k,v){try{localStorage.setItem("air7:"+k,JSON.stringify(v));}catch(e){}}
+};
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+
+/* ---------- 七天內容 ---------- */
+var DAYS=[
+{
+ n:1, short:"學術助理設定",
+ title:"AI 學術助理設定術：自訂指令、快捷指令與專案功能",
+ thesis:"同一個 AI，設定過和沒設定過，回答品質差很多。今天把 AI 調成「認識你研究的助理」：它知道你的領域、你要的格式，也知道哪些事情不准做。",
+ outcome:"我的研究者設定卡＋3 個快捷指令",
+ goals:[
+  "分清楚三層設定：自訂指示管「你是誰、怎麼回答」；專案管「這個研究題目的背景與檔案」；快捷指令管「常用的一句話，一鍵叫出來」。",
+  "寫出一份自己的自訂指示，裡面要有「不准捏造文獻」「不確定就說不確定」這類規則。",
+  "替一個研究題目建專案，放進研究問題、關鍵詞與計畫摘要。",
+  "做好 3 個以上快捷指令，並用 A/B 比較驗證設定真的有效。"
+ ],
+ minutes:[
+  ["0:00","為什麼要設定","同一題丟給「沒設定」和「設定過」的 AI，現場比較兩個答案。"],
+  ["0:20","三層設定講解","自訂指示、專案、快捷指令各管什麼；三家 AI 的對應功能。"],
+  ["0:40","講師示範","從零寫一份研究者自訂指示，建一個專案，存一個快捷指令。"],
+  ["1:10","動手：設定卡","每人寫自己的自訂指示與專案說明，兩人一組互看。"],
+  ["2:00","動手：快捷指令＋A/B 測試","做 3 個快捷指令，用同一題比較設定前後。"],
+  ["2:30","分享與檢核","挑 3 位分享最有用的一條規則；交設定卡。"]
+ ],
+ tools:[
+  {name:"ChatGPT",tag:"free",note:"先關「設定 → 資料控管 → 改善模型以惠及所有人」，再寫「設定 → 個人化 → 自訂指示」。專案指示在專案的 ⋯ → 專案設定；檔案上限免費 5 個、Go 和 Plus 25 個。"},
+  {name:"Claude",tag:"free",note:"先關「設定 → 隱私 → 協助改善 Claude」，再寫「設定 → 一般 → 給 Claude 的指示」（舊版叫個人偏好）。專案有知識區與專案指示；免費最多 5 個專案。"},
+  {name:"Gemini",tag:"free",note:"「Gem」可以當成一個專用助理，也很適合當快捷指令；已儲存的資訊可記住你的背景。"},
+  {name:"作業系統內建",tag:"free",note:"macOS：系統設定→鍵盤→文字替代，輸入「;摘要」自動展開成整段 prompt。Windows：Win＋V 剪貼簿歷程可以釘選常用 prompt。"}
+ ],
+ steps:[
+  ["先關訓練開關","ChatGPT：設定 → 資料控管 → 改善模型以惠及所有人；Claude：設定 → 隱私 → 協助改善 Claude。在開始聊研究之前就關。"],
+  ["寫研究者自介","領域、階段（碩士、博士、教師）、研究主題一句話、常用方法、引用格式（例如 APA 第 7 版）。"],
+  ["寫回答規則","繁體中文台灣用語、專有名詞附英文、先結論後理由、引用要有 DOI、分清楚「文獻說的」和「你推論的」。"],
+  ["寫禁止事項","不准捏造文獻、數據、受訪者說法；找不到就說找不到。"],
+  ["建立研究專案","放研究問題、關鍵詞表、計畫摘要。不要放未發表的原始資料或任何個資。"],
+  ["做快捷指令","至少三個：論文摘要、審稿人批判、學術語氣改寫。存在 Gem、專案或作業系統文字替代裡。"],
+  ["A/B 驗證","同一個問題，在「無設定的新對話」和「你的專案」各問一次，記下差在哪裡。"]
+ ],
+ practice:{
+  title:"練習：我的研究者設定卡",
+  items:[
+   "用下面的「自訂指示範本」填好自己的版本，貼進至少一家 AI。",
+   "建一個以自己研究題目命名的專案。",
+   "做 3 個快捷指令，各實際用一次。",
+   "A/B 測試：問「請推薦 3 篇我這個主題的重要文獻」，比較兩邊的回答格式與是否附 DOI。"
+  ],
+  check:["設定裡有「不准捏造文獻」這類禁止條款","專案裡沒有個資或未發表資料","A/B 測試看得出差異，並寫下一句觀察"]
+ },
+ prompts:[
+  {name:"自訂指示範本（研究者版）",text:"【我是誰】\n我是{領域}的{碩士生／博士生／教師}，研究主題是{一句話}，常用方法是{問卷／訪談／實驗／次級資料}。引用格式用 APA 第 7 版。\n\n【回答方式】\n1. 用繁體中文（台灣用語），專有名詞第一次出現附英文。\n2. 先給結論，再給理由；適合時用表格。\n3. 提到文獻時附作者、年份、題名、期刊、DOI。\n4. 分清楚「文獻怎麼說」和「你的推論」，推論前面標【推論】。\n5. 我問統計問題時，提醒我檢查前提假設和效果量。\n\n【不要做的事】\n不要捏造任何文獻、數據或受訪者說法。沒有可查證的來源，就直接說「我沒有可靠來源」。"},
+  {name:"快捷指令：論文五點摘要",text:"用 5 點摘要這篇論文：研究問題、方法、樣本、主要發現、限制。\n每一點標出原文頁碼或段落；原文沒寫的那一點寫「未提及」，不要自己推測。"},
+  {name:"快捷指令：審稿人模式",text:"請用嚴格審稿人的角度讀下面這段。\n列出論證最弱的 3 個地方，每一個說明為什麼弱，再給一個可以補強的方向（例如需要哪一類證據）。\n不要改寫我的文字。"},
+  {name:"快捷指令：學術語氣改寫",text:"把下面這段改成學術寫作語氣。\n規則：保留原意；保留所有引用標記，不新增、不刪除、不移動；不加入任何新的事實或文獻。\n改完用條列說明你改了哪些地方。"}
+ ],
+ pitfalls:[
+  ["指令寫太長","AI 會選擇性忽略。","控制在一頁內，最重要的禁止條款放最前面。"],
+  ["以為設定了就不會編造","設定只能降低機率，不能保證。","Day 2 的檢證照做，一條都不能省。"],
+  ["把未發表資料放進專案","等於把資料交給第三方。","專案只放研究問題、關鍵詞、公開文獻。"],
+  ["學校帳號找不到功能","管理端可能關閉了部分功能。","先用個人帳號練習，回報講師。"]
+ ],
+ homework:["交「研究者設定卡」：自訂指示全文＋專案截圖＋3 個快捷指令。","寫 100 字 A/B 測試觀察：設定前後哪裡不同、哪裡一樣。"],
+ links:[["Day 1 投影片","slides/day01.html"],["Day 1 闖關頁","workshop/day01.html"],["ChatGPT","https://chatgpt.com"],["Claude","https://claude.ai"],["Gemini","https://gemini.google.com"]]
+},
+{
+ n:2, short:"三角檢證",
+ title:"AI 三角檢證法：跨 AI、跨文獻、單篇內容三重檢證",
+ thesis:"AI 回答得很流暢，不代表它說的是真的。三角檢證把查核拆成三層：換一家 AI 比對、回到資料庫確認文獻存在、打開原文確認真的有寫。",
+ outcome:"一張檢證紀錄表（5 條主張逐條判定）",
+ goals:[
+  "會做三層檢證，並知道每一層能抓到什麼、抓不到什麼。",
+  "會用 DOI、Crossref、Google Scholar 確認一篇文獻是否存在、書目是否正確。",
+  "會查撤稿：Retraction Watch 資料庫。",
+  "會用「主張－原文」對照表判斷支持、部分支持或不支持。"
+ ],
+ minutes:[
+  ["0:00","暖身小測驗","本頁下方的 5 題檢證小測驗，全班一起作答。"],
+  ["0:20","三層檢證講解","跨 AI 比的是分歧、跨文獻查的是存在、單篇看的是內容。"],
+  ["0:40","講師示範","請 AI 列 5 篇文獻，現場逐條驗，算出「存在率」和「原文支持率」。"],
+  ["1:10","動手：檢證紀錄表","用自己題目跑一輪，填完 5 條。"],
+  ["2:10","小組比對","不同 AI 的錯誤類型有什麼不同？各組整理一張。"],
+  ["2:30","分享與檢核","講師收集全班數據，看哪一類錯最常見。"]
+ ],
+ tools:[
+  {name:"兩到三家 AI",tag:"free",note:"ChatGPT、Claude、Gemini 擇二以上，用同一個問題。"},
+  {name:"doi.org／Crossref",tag:"free",note:"把 DOI 貼到 doi.org 看是否導向同一篇；Crossref 搜尋可以用題名反查 DOI。"},
+  {name:"Google Scholar／OpenAlex",tag:"free",note:"題名加作者搜尋，確認文獻存在與被引用情形。"},
+  {name:"Retraction Watch Database",tag:"free",note:"確認文獻有沒有被撤稿或更正。"}
+ ],
+ steps:[
+  ["第一層：跨 AI","同一題問兩到三家 AI。大家都說的不一定對，但有分歧的地方一定要查。把分歧點列出來。"],
+  ["第二層：跨文獻（存在）","AI 給的每一篇文獻，都去 doi.org、Crossref 或 Google Scholar 查：題名、作者、年份、期刊是否一致，DOI 是否指到同一篇。"],
+  ["第二層之二：撤稿","在 Retraction Watch 查一次。撤稿的文獻不能當支持證據。"],
+  ["第三層：單篇內容","打開原文，找到 AI 說的那一段，記下頁碼。看樣本、情境、限制，判斷能不能推到你的研究。"],
+  ["填判定","每條主張給一個判定：✅ 原文支持、⚠️ 部分支持或過度推論、❌ 不存在或原文不支持。"]
+ ],
+ practice:{
+  title:"練習：5 條主張的檢證紀錄表",
+  items:[
+   "用「跨 AI 提問」範本問兩家 AI，各取 5 篇文獻。",
+   "表格欄位：主張｜哪家 AI｜文獻存在嗎｜書目正確嗎｜撤稿嗎｜原文頁碼｜判定。",
+   "算出兩個數字：存在率（查得到的篇數÷總篇數）、支持率（✅ 篇數÷查得到的篇數）。"
+  ],
+  check:["每一篇都有查詢的網址或截圖","✅ 的那幾篇都有原文頁碼","有寫下一個「AI 自己不會告訴你」的錯誤類型"]
+ },
+ prompts:[
+  {name:"跨 AI 提問（兩家都用同一段）",text:"針對以下研究問題，列出 3 到 5 個主要觀點。\n每個觀點附至少 1 篇可查證的文獻：作者、年份、題名、期刊、DOI。\n沒有把握的文獻，請標「不確定」，不要補齊看起來合理的資訊。\n\n研究問題：{你的問題}"},
+  {name:"主張與原文對照（輔助判斷用）",text:"我的主張：「{你或 AI 寫的句子}」\n原文段落（第 {頁碼} 頁）：「{貼上原文}」\n\n請逐句判斷原文是否支持我的主張：支持／部分支持／不支持。\n指出差異在哪裡，例如樣本不同、條件不同、因果說太強。\n只根據我貼的原文判斷，不要引用其他資料。"}
+ ],
+ pitfalls:[
+  ["三家都一樣就當真","AI 可能共享同樣的錯誤來源。","共識只代表「優先查哪裡」，不是證據。"],
+  ["叫 AI 檢查自己","它常會順著你講，說「是的，這篇存在」。","存在與否一律到資料庫查，不問 AI。"],
+  ["DOI 存在就放心","DOI 可能是真的，但指向另一篇論文。","打開 DOI，核對題名與作者。"],
+  ["只看摘要","摘要常把結論講得比內文強。","找到內文那一段，記頁碼。"]
+ ],
+ homework:["交檢證紀錄表（5 條以上），附存在率與支持率。","寫 3 句：哪一層抓到最多錯？你之後寫論文會固定做哪一層？"],
+ links:[["Day 2 投影片","slides/day02.html"],["Day 2 闖關頁","workshop/day02.html"],["doi.org","https://doi.org"],["Crossref 搜尋","https://search.crossref.org"],["Google Scholar","https://scholar.google.com"],["Retraction Watch","https://retractiondatabase.org"]]
+},
+{
+ n:3, short:"MCP 文獻雷達",
+ title:"MCP 文獻雷達：讓 AI 直接連上學術資料庫",
+ thesis:"AI 憑記憶列文獻，最容易出錯。接上學術資料庫之後，它是「真的去查」再回答。今天學 MCP（Model Context Protocol，模型上下文協定）這個連接標準，用它搭一個文獻雷達。",
+ outcome:"一份由資料庫查回的文獻清單（含 DOI，可匯入 Zotero）",
+ goals:[
+  "用一句話說清楚 MCP：讓 AI 可以呼叫外部工具與資料庫的開放標準，像 AI 世界的 USB-C 接頭。",
+  "會在 Claude 開啟學術連接器，並確認 AI 真的有呼叫工具。",
+  "會把研究問題拆成關鍵詞與布林搜尋式。",
+  "知道每個資料庫的覆蓋範圍，選對來源。"
+ ],
+ minutes:[
+  ["0:00","對照實驗","同一題：AI 憑記憶列文獻 vs 接上資料庫後列文獻，用 Day 2 方法現場比存在率。"],
+  ["0:25","MCP 是什麼","兩條路：雲端連接器（點幾下就好）與本機 MCP server（要安裝，進階）。"],
+  ["0:45","講師示範","開連接器、下搜尋指令、看工具呼叫紀錄、匯出清單。"],
+  ["1:15","動手：搜尋策略","把自己的研究問題拆成概念與關鍵詞，組布林式。"],
+  ["1:45","動手：文獻雷達","用連接器跑兩輪搜尋，整理成 10 到 20 篇的清單。"],
+  ["2:35","檢核","抽 3 篇用 Day 2 方法驗；清單存成 Day 5 要用的格式。"]
+ ],
+ tools:[
+  {name:"Claude 連接器",tag:"paid",note:"目錄中有 PubMed、Scholar Gateway（Wiley 出版內容，需驗證）、Scite 等。⚠️ 各方案可用範圍以當天實測為準。"},
+  {name:"本機 MCP server（進階）",tag:"free",note:"OpenAlex、Semantic Scholar、arXiv 等有開源 MCP server，需 Claude Desktop 加上 Node.js 或 Python。屬第三方維護，安裝前看授權與更新紀錄。"},
+  {name:"OpenAlex 網站",tag:"free",note:"免費開放的學術資料庫，網頁版可直接搜尋，也是沒有連接器時的備案。"}
+ ],
+ steps:[
+  ["拆研究問題","把問題拆成 2 到 3 個概念，每個概念列中英文同義詞。"],
+  ["選資料庫","生醫與護理找 PubMed；跨領域找 OpenAlex；看「被支持或被反駁」找 Scite；Scholar Gateway 只有 Wiley 內容。"],
+  ["開連接器","在 Claude 的設定或對話工具選單開啟要用的連接器（第一次會要求授權）。"],
+  ["下搜尋指令","明講「只用連接器查，不要憑記憶」，指定年份、研究設計、語言與輸出欄位。"],
+  ["確認有查","看回答中是否出現工具呼叫的紀錄。沒有呼叫就直接給清單，等於還是憑記憶。"],
+  ["整理匯出","去重、補上 DOI，存成 DOI 清單，Day 5 一次匯入 Zotero。"]
+ ],
+ practice:{
+  title:"練習：我的文獻雷達",
+  items:[
+   "用「搜尋策略」範本拆出自己的布林搜尋式。",
+   "用「文獻雷達」範本跑兩輪：一輪寬、一輪加條件收窄。",
+   "整理 10 到 20 篇，欄位：作者｜年份｜題名｜期刊｜DOI｜一句話重點｜來源資料庫。",
+   "抽 3 篇做 Day 2 檢證。"
+  ],
+  check:["每一篇都有 DOI 或可查的連結","畫面上看得到工具呼叫紀錄","抽驗 3 篇全部存在"]
+ },
+ prompts:[
+  {name:"搜尋策略：拆概念與布林式",text:"我的研究問題是：{問題}\n\n請幫我：\n1. 拆成 2 到 3 個核心概念。\n2. 每個概念列出中文與英文同義詞、相關詞（各 3 到 6 個）。\n3. 組成一條英文布林搜尋式（AND 連接概念，OR 連接同義詞，片語加引號）。\n4. 建議納入與排除條件（年份、研究設計、族群）。"},
+  {name:"文獻雷達（需開啟連接器）",text:"請只使用已連接的學術資料庫工具搜尋，不要憑記憶回答。\n\n主題：{主題}\n搜尋式：{布林式}\n條件：{年份} 年以後；研究設計：{實證研究／系統性回顧}；語言：英文\n\n請用表格回傳：作者｜年份｜題名｜期刊｜DOI｜一句話重點｜用了哪個工具。\n找不到符合條件的就直接說找不到，不要補。"}
+ ],
+ pitfalls:[
+  ["AI 沒呼叫工具","它可能直接用記憶回答，看起來一樣。","檢查工具呼叫紀錄；指令裡寫明「只用工具」。"],
+  ["資料庫覆蓋有偏","PubMed 偏生醫，Scholar Gateway 只有 Wiley。","兩個以上資料庫交叉搜；人文社會領域另查華藝等中文資料庫。"],
+  ["本機 server 來路不明","第三方程式可以讀寫你的電腦。","只裝有人維護、看得懂權限的專案；課堂以雲端連接器為主。"],
+  ["一次要太多","超過頻率限制或回傳被截斷。","每輪 20 篇以內，分批查。"]
+ ],
+ homework:["交文獻清單（10 篇以上，含 DOI）與搜尋式。","寫一段 100 字：接上資料庫前後，存在率差多少？"],
+ links:[["Day 3 投影片","slides/day03.html"],["Day 3 闖關頁","workshop/day03.html"],["MCP 官方文件","https://modelcontextprotocol.io"],["Scholar Gateway 連接器","https://claude.com/marketplace/connectors/scholar-gateway"],["OpenAlex","https://openalex.org"],["PubMed","https://pubmed.ncbi.nlm.nih.gov"]]
+},
+{
+ n:4, short:"JASP × OpenRouter",
+ title:"JASP × OpenRouter：統計分析跑完，AI 幫你讀懂結果",
+ thesis:"統計軟體跑得出數字，難的是讀懂它、寫對它。JASP 是免費的點選式統計軟體，新版可以接上 AI；用 OpenRouter 的一把金鑰，就能換不同模型幫你解讀。數字由 JASP 負責，AI 只負責解釋，你負責核對。",
+ outcome:"一份統計結果解讀：白話說明＋APA 格式結果句＋不能推論什麼",
+ goals:[
+  "會用 JASP 開範例資料，跑 t 檢定或相關分析，勾選前提假設檢定與效果量。",
+  "會申請 OpenRouter 金鑰、設花費上限，接進 JASP 的 AI 助理。",
+  "會讓兩個不同模型解讀同一份結果，比較差異（Day 2 的跨 AI）。",
+  "會抓 AI 解讀的典型錯誤：改數字、把相關說成因果、把不顯著說成沒有差異。"
+ ],
+ minutes:[
+  ["0:00","JASP 快速上手","介面、資料檢視、分析選單；開內建範例資料。"],
+  ["0:25","OpenRouter 與金鑰","申請帳號、建立金鑰、設定上限、選免費或低價模型。"],
+  ["0:45","講師示範","跑一個獨立樣本 t 檢定，自己先寫一句解讀，再開 AI 助理解讀，逐字對數字。"],
+  ["1:15","動手：跑分析","每人選一個範例資料跑分析，先寫自己的解讀。"],
+  ["1:50","動手：雙模型解讀","兩個模型各解讀一次，用核對表找錯。"],
+  ["2:30","分享與檢核","各組報告一個 AI 解讀錯誤。"]
+ ],
+ tools:[
+  {name:"JASP",tag:"free",note:"免費開源統計軟體，點選操作，輸出接近 APA 格式的表格。新版內建可選用的 AI 助理，在偏好設定填入 API 金鑰後啟用。⚠️ 版本與選單位置以課堂安裝版為準。"},
+  {name:"OpenRouter",tag:"free",note:"一把金鑰接多家模型。有標示免費的模型（有頻率限制），付費模型按用量計費，可設定金鑰花費上限。"},
+  {name:"OpenRouter 網頁對話（備案）",tag:"free",note:"JASP 接不上時，把結果表格複製貼到 OpenRouter 網頁對話，效果相同。"}
+ ],
+ steps:[
+  ["開範例資料","在 JASP 的資料庫範例中選一份（例如兩組比較的資料）。"],
+  ["跑分析並勾選完整","勾選描述統計、前提假設檢定（常態、變異數同質）、效果量與信賴區間。"],
+  ["自己先寫一句","在問 AI 之前，先寫下你讀到的結果。這是之後比對的基準。"],
+  ["申請與設定金鑰","在 OpenRouter 建金鑰並設定花費上限；金鑰只貼在 JASP 偏好設定，不貼在任何共用文件。"],
+  ["請 AI 解讀","用「統計解讀」範本，要求不准改數字、要說出不能推論什麼。"],
+  ["核對與換模型","逐一核對數字；換第二個模型再解讀一次，比較差異。"]
+ ],
+ practice:{
+  title:"練習：一份經過核對的統計解讀",
+  items:[
+   "跑一個分析，截圖結果表。",
+   "寫下「我的解讀」一段。",
+   "兩個模型各解讀一次，貼上原文。",
+   "用核對表逐項打勾，標出 AI 錯在哪裡。"
+  ],
+  check:["AI 文字裡每個數字都和 JASP 表格一致","有寫出「這個結果不能推論什麼」","前提假設有沒有違反，有被提到"]
+ },
+ prompts:[
+  {name:"統計結果解讀",text:"以下是 JASP 的分析輸出（{分析名稱}）。\n\n請：\n1. 用一段白話說明結果，給沒有統計背景的人看。\n2. 用 APA 第 7 版格式寫一句結果報告。\n3. 說明這個結果「不能」推論出什麼。\n4. 列出我應該再檢查的前提假設，以及違反時的替代做法。\n\n規則：不要更改任何數字，需要時原樣照抄；表格裡沒有的數字不要自己算或補。\n\n{貼上結果表格}"},
+  {name:"兩個解讀的比較",text:"以下是兩個模型對同一份統計結果的解讀。\n請列出兩者的差異：數字是否一致、結論強弱是否不同、有沒有其中一方說錯。\n只根據我貼的原始結果表判斷。\n\n原始結果：{表格}\n解讀 A：{…}\n解讀 B：{…}"}
+ ],
+ pitfalls:[
+  ["AI 改了數字","四捨五入不一致，甚至抄錯。","數字一律從 JASP 表格抄，AI 文字只拿來參考句型。"],
+  ["p 值解釋錯","把 p＜.05 說成「有 95% 機率是真的」。","課堂核對表第一題就檢查這個。"],
+  ["不顯著說成沒有差異","不顯著只代表證據不足。","要求 AI 同時報告效果量與信賴區間。"],
+  ["金鑰外洩","截圖或貼在共用文件。","截圖前遮住；外洩就到 OpenRouter 刪除重建。"],
+  ["傳了不該傳的資料","AI 解讀時會把結果甚至變數名稱送到模型供應商。","只用公開或去識別資料；在 OpenRouter 隱私設定確認資料使用政策 ⚠️。"]
+ ],
+ homework:["交統計解讀一份：結果截圖＋我的解讀＋兩個模型的解讀＋核對表。","用一句話寫：哪一個模型比較可靠？依據是什麼？"],
+ links:[["Day 4 投影片","slides/day04.html"],["Day 4 闖關頁","workshop/day04.html"],["JASP","https://jasp-stats.org"],["OpenRouter","https://openrouter.ai"]]
+},
+{
+ n:5, short:"Zotero × Word",
+ title:"Zotero × ChatGPT for Word：從蒐集文獻到自動引用",
+ thesis:"今天的分工很清楚：Zotero 管引用是不是真的，ChatGPT for Word 管文字寫得順不順。參考文獻一律由 Zotero 插入，AI 只碰文字，不碰書目。",
+ outcome:"一段 300 字、附 5 筆以上 Zotero 引用與自動參考文獻表的段落",
+ goals:[
+  "會用 Zotero Connector 一鍵存文獻、用 DOI 批次新增、檢查並補正書目資料。",
+  "會在 Word 用 Zotero 外掛插入引用、切換 APA 第 7 版、產生參考文獻表。",
+  "會安裝 ChatGPT for Word，在側邊欄改寫選取段落、檢查哪些句子缺引用。",
+  "改寫之後，會核對引用數量沒變、Zotero 引用還能更新。"
+ ],
+ minutes:[
+  ["0:00","分工原則","為什麼引用不能交給 AI 打：現場看一個 AI 生出來的假書目。"],
+  ["0:15","Zotero 上手","安裝、Connector、用 DOI 新增、合併重複、補中文文獻資料。"],
+  ["0:45","Word 外掛","插入引用、切換格式、產生參考文獻表。"],
+  ["1:05","ChatGPT for Word","安裝、側邊欄、問文件、改寫選取段落。"],
+  ["1:25","動手：寫一段","把 Day 3 清單匯入 Zotero，寫 300 字段落並插入引用。"],
+  ["2:15","動手：改寫與核對","用 ChatGPT for Word 改寫，再核對引用。"],
+  ["2:35","檢核","兩人交換文件，互相點一次 Zotero 的重新整理。"]
+ ],
+ tools:[
+  {name:"Zotero（第 8 版起）",tag:"free",note:"免費開源文獻管理。第 8 版的 Word 引用對話框改成統一介面。雲端同步免費空間有限，PDF 多的話可只同步書目。"},
+  {name:"Zotero Connector",tag:"free",note:"瀏覽器擴充功能，在論文頁面一鍵存進 Zotero。"},
+  {name:"ChatGPT for Word",tag:"free",note:"從 Microsoft Marketplace 安裝，Word 功能區開啟、以 ChatGPT 帳號登入，所有方案含免費版。組織版 Microsoft 365 需要管理員允許。對話紀錄和一般 ChatGPT 分開。⚠️ 東華帳號待實測。"}
+ ],
+ steps:[
+  ["匯入文獻","Zotero 右上的魔術棒圖示，貼上 Day 3 清單的 DOI，批次新增。"],
+  ["檢查書目","作者、年份、期刊、卷期頁、DOI 逐筆看；中文文獻常缺欄位，手動補。"],
+  ["寫段落插引用","在 Word 寫 300 字，用 Zotero 外掛的新增引用插入，格式選 APA 第 7 版。"],
+  ["產生參考文獻表","用 Zotero 外掛新增參考文獻表，之後會自動更新。"],
+  ["AI 改寫","選取段落，在 ChatGPT for Word 側邊欄用「改寫」範本。改寫前先存一份。"],
+  ["核對","數引用數量是否一樣；按一次 Zotero 重新整理，確認引用仍是 Zotero 欄位而不是普通文字。"]
+ ],
+ practice:{
+  title:"練習：一段有真引用的文獻段落",
+  items:[
+   "從 Day 3 清單匯入至少 10 筆到 Zotero。",
+   "寫 300 字段落，插入 5 筆以上引用，產生參考文獻表。",
+   "用 ChatGPT for Word 改寫一次，用「缺引用檢查」範本跑一次。",
+   "存兩個版本：改寫前、改寫後。"
+  ],
+  check:["改寫前後引用數量相同","按 Zotero 重新整理後沒有出現錯誤","參考文獻表每一筆都能在 Zotero 找到"]
+ },
+ prompts:[
+  {name:"ChatGPT for Word：安全改寫",text:"把選取的段落改得更精簡、更有學術語氣。\n規則：\n1. 不要新增、刪除或移動任何引用（括號裡的作者與年份）。\n2. 不要加入新的事實、數字或文獻。\n3. 保留專有名詞的英文。\n改完列出你改了哪些地方。"},
+  {name:"ChatGPT for Word：缺引用檢查",text:"讀這份文件，找出「提出事實或主張，卻沒有引用」的句子。\n只要列出句子和原因，不要自己補引用，也不要推薦文獻。"},
+  {name:"ChatGPT for Word：段落邏輯檢查",text:"檢查這一節的段落順序與論證是否連貫。\n指出哪裡跳太快、哪裡重複、哪裡結論比證據強。\n不要改寫，只給建議。"}
+ ],
+ pitfalls:[
+  ["AI 打了引用","看起來格式完美，但查不到。","所有引用只從 Zotero 插入；AI 新增的括號引用一律刪掉。"],
+  ["改寫弄壞 Zotero 欄位","引用變成普通文字，之後不會更新。","改寫前存檔；只選不含引用的句子改；改完按重新整理檢查。"],
+  ["中文文獻資料不全","作者、卷期常抓錯。","手動補；必要時從資料庫匯出 RIS 再匯入。"],
+  ["學校帳號裝不了外掛","Microsoft 365 管理員未允許。","先用個人 Microsoft 帳號，或改用 Word 網頁版加個人帳號 ⚠️ 待實測。"]
+ ],
+ homework:["交 Word 檔兩版（改寫前、改寫後），參考文獻表由 Zotero 產生。","寫 3 句：AI 改寫了什麼？哪一處你沒有採用，為什麼？"],
+ links:[["Day 5 投影片","slides/day05.html"],["Day 5 闖關頁","workshop/day05.html"],["Zotero","https://www.zotero.org"],["Zotero 8 說明","https://www.zotero.org/blog/zotero-8/"],["ChatGPT for Word 說明","https://help.openai.com/en/articles/20001526"]]
+},
+{
+ n:6, short:"Gemini 筆記本",
+ title:"Gemini Notebook 研究五大應用",
+ thesis:"筆記本只根據你放進去的文獻回答，並附上回到原文的引用。它適合讀一批論文、比較一批論文、從一批論文裡找缺口。有引用不代表不會錯，點回原文還是你的工作。",
+ outcome:"一本研究筆記本＋一張跨文獻比較表＋一份口試模擬題",
+ goals:[
+  "知道 Gemini 筆記本與 NotebookLM 的關係：同一本筆記本兩邊同步，Gemini 那邊先開放付費方案。",
+  "會把 5 到 10 篇文獻放進筆記本，用五種應用各做一次。",
+  "會點回引用核對原文，抓出簡化或誤述。",
+  "會用語音或影片摘要、測驗，準備報告與口試。"
+ ],
+ minutes:[
+  ["0:00","筆記本是什麼","和一般對話差在哪裡：只根據來源回答、附引用；與 NotebookLM 的關係。"],
+  ["0:20","建立筆記本","上傳 PDF、貼網址、匯入 Google 文件；來源的數量與大小限制。"],
+  ["0:35","五大應用示範","每個應用示範一次，並點回引用核對。"],
+  ["1:15","動手：五大應用","用自己的文獻跑完五個應用。"],
+  ["2:20","互評","兩人交換比較表，各抽 2 格點回原文。"],
+  ["2:40","檢核","分享最有用的一個應用。"]
+ ],
+ tools:[
+  {name:"Gemini 筆記本",tag:"paid",note:"2026 年 4 月推出，與 NotebookLM 雙向同步，先開放付費方案網頁版。⚠️ 免費方案與學校帳號狀況以當天實測為準。"},
+  {name:"NotebookLM",tag:"free",note:"沒有付費方案時直接用這個，功能相同，還有語音摘要、心智圖、測驗等。建議用個人 Google 帳號。"}
+ ],
+ apps:[
+  ["新領域快速地圖","放 5 到 10 篇綜論，問主要理論、學派、爭議，生成心智圖。"],
+  ["跨文獻比較表","依研究設計、樣本、測量工具、主要發現、限制整理成表。"],
+  ["方法論拆解","針對一篇關鍵論文，拆抽樣、變項、分析與效度威脅，對照自己的研究。"],
+  ["研究缺口發想","問「這些研究共同沒回答的是什麼」，要求指出出自哪幾篇的限制段落。"],
+  ["報告與口試準備","語音或影片摘要通勤時聽；讓它扮口試委員出題；用測驗檢查自己讀懂沒。"]
+ ],
+ steps:[
+  ["建筆記本","以研究題目命名，放入 Day 3、Day 5 整理過的文獻（PDF 或網址）。"],
+  ["寫筆記本指示","設定回答語言、格式與「原文沒寫就說未提及」。"],
+  ["跑五大應用","每個應用至少做一次，結果存成筆記。"],
+  ["點回引用","每個重要回答抽 2 處引用點回原文，看有沒有被簡化或誤述。"],
+  ["產出報告素材","比較表匯出到文件，口試題目留到 Day 7 用。"]
+ ],
+ practice:{
+  title:"練習：我的研究筆記本",
+  items:[
+   "建一本筆記本，放 5 到 10 篇文獻。",
+   "五個應用各跑一次，存成筆記。",
+   "比較表抽 4 格點回原文核對，記下結果。",
+   "產生一份語音或影片摘要，聽完寫一句「它哪裡講得太簡單」。"
+  ],
+  check:["比較表有「未提及」的格子，而不是每格都被填滿","抽驗的引用都有核對紀錄","沒有上傳未發表或受版權限制不能分享的檔案"]
+ },
+ prompts:[
+  {name:"應用 1：領域地圖",text:"根據這些來源，整理這個領域的概念地圖：主要理論、學派、核心爭議。\n每一項標出出自哪個來源。來源沒有涵蓋的部分，請直接說沒有涵蓋。"},
+  {name:"應用 2：比較表",text:"做一張比較表，欄位：作者年份｜研究問題｜研究設計｜樣本｜測量工具｜主要發現｜限制。\n來源沒寫的格子填「未提及」，不要推測。"},
+  {name:"應用 3：方法論拆解",text:"針對《{論文題名}》，拆解研究設計：抽樣方式、主要變項、分析方法、效度威脅。\n如果我要做類似研究（我的情境：{簡述}），哪些地方需要調整？"},
+  {name:"應用 4：研究缺口",text:"這些研究共同沒有回答的問題有哪些？\n每一個缺口，請指出是哪幾篇的「限制」或「未來研究」段落提到的；只有你推論、原文沒寫的，請標【推論】。"},
+  {name:"應用 5：口試模擬",text:"請扮演嚴格的口試委員。根據這些文獻，對我的研究計畫提出 5 個尖銳問題。\n每題附上：這題在考什麼、可以從哪篇文獻找答案。\n我的研究計畫摘要：{摘要}"}
+ ],
+ pitfalls:[
+  ["以為有引用就不會錯","引用指的段落可能只部分支持。","重要句子都點回原文看。"],
+  ["語音摘要過度簡化","為了好聽會把限制講少。","當成導讀，不當成論文內容。"],
+  ["上傳不該上傳的檔案","未發表稿件、受訪逐字稿。","只放已公開文獻；逐字稿去識別後也先問指導教授。"],
+  ["分享權限","分享筆記本會讓別人看到來源與對話。","分享前確認來源可以分享。"]
+ ],
+ homework:["交筆記本的五則筆記（截圖或匯出）＋比較表。","交 4 格引用核對紀錄：支持、部分支持或不支持。"],
+ links:[["Day 6 投影片","slides/day06.html"],["Day 6 闖關頁","workshop/day06.html"],["Gemini 筆記本說明","https://blog.google/innovation-and-ai/products/gemini-app/notebooks-gemini-notebooklm/"],["NotebookLM","https://notebooklm.google.com"],["Gemini","https://gemini.google.com"]]
+},
+{
+ n:7, short:"Agent 工作流",
+ title:"AI Agent 研究工作流：讓 AI 團隊分工完成文獻探討",
+ thesis:"Agent 是能自己規劃、呼叫工具、連續做好幾步的 AI。今天把前六天串起來：把文獻探討拆成幾個角色，每個角色交給 AI，你當組長，每一關都要你看過才往下走。",
+ outcome:"一份 1,500 字文獻探討初稿＋文獻矩陣＋檢證紀錄＋AI 使用揭露聲明",
+ goals:[
+  "知道 Agent 和一般對話的差別：會規劃、會用工具、會多步驟執行。",
+  "會把文獻探討拆成六個角色，替每個角色寫一段角色指示。",
+  "會設計「人工關卡」：哪幾步一定要人看過才往下。",
+  "能用前六天的工具完成一份可以交給指導教授看的初稿。"
+ ],
+ minutes:[
+  ["0:00","Agent 是什麼","一般對話、深度研究、Agent 的差別；講者自己的 AI 團隊實例。"],
+  ["0:20","六個角色與人工關卡","規劃、搜尋、篩選、萃取、寫作、審查；每一棒交接什麼。"],
+  ["0:40","講師示範","用一個題目從規劃跑到初稿，示範每一關的人工檢查。"],
+  ["1:10","動手：跑自己的流程","照六個角色跑一輪，填流程紀錄表。"],
+  ["2:20","交叉審查","換一家 AI 當審查員，或兩人互審。"],
+  ["2:40","結業分享","每人 1 分鐘：我的工作流裡最重要的一個關卡。"]
+ ],
+ tools:[
+  {name:"各家深度研究功能",tag:"paid",note:"ChatGPT、Gemini、Claude 都有可以自動搜尋多步驟整理的研究模式，額度依方案不同 ⚠️。適合當「搜尋員」，不適合直接當成品。"},
+  {name:"Claude 專案＋連接器",tag:"paid",note:"Day 1 的專案加上 Day 3 的連接器，就是一個有記憶、會查資料庫的研究助理。"},
+  {name:"前六天的工具",tag:"free",note:"Zotero 管引用、筆記本做萃取、JASP 管數字、Day 2 的檢證表管品質。"}
+ ],
+ roles:[
+  ["規劃者","研究問題變成搜尋策略、納入與排除條件。","你核對：問題有沒有被改掉"],
+  ["搜尋員","用連接器或深度研究找文獻，回傳含 DOI 的清單。","你核對：抽驗存在率"],
+  ["篩選員","依條件篩題名與摘要，每篇寫納入或排除理由。","你核對：抽看被排除的 5 篇"],
+  ["萃取員","在筆記本做比較表與文獻矩陣。","你核對：抽格點回原文"],
+  ["寫作者","依矩陣寫初稿，引用由你用 Zotero 插入。","你核對：每段都有證據"],
+  ["審查員","換一家 AI 用審稿人模式挑毛病，再跑 Day 2 檢證。","你決定：改哪些、不改哪些"]
+ ],
+ steps:[
+  ["定題與規劃","用規劃者指示產出搜尋策略與納入排除條件，你確認後才往下。"],
+  ["搜尋與篩選","搜尋員回傳清單，篩選員逐篇給理由；記下篩選數量（找到幾篇、排除幾篇、剩幾篇）。"],
+  ["萃取成矩陣","把留下的文獻放進筆記本，做文獻矩陣：主題 × 文獻。"],
+  ["寫初稿","依矩陣分主題寫，每段先寫論點，再放證據；引用由 Zotero 插入。"],
+  ["交叉審查","換一家 AI 當審查員；你逐條決定採不採用，並寫下理由。"],
+  ["揭露與收尾","寫 AI 使用揭露聲明，整理流程紀錄表。"]
+ ],
+ practice:{
+  title:"練習：文獻探討初稿（結業作品）",
+  items:[
+   "用六個角色跑完一輪，每一關留下紀錄。",
+   "產出文獻矩陣（至少 8 篇 × 3 個主題）。",
+   "寫 1,500 字初稿，引用全部由 Zotero 插入。",
+   "交叉審查一次，附採用與不採用的理由。",
+   "寫 AI 使用揭露聲明。"
+  ],
+  check:["每一關都有你的檢查紀錄","篩選有寫排除理由","初稿裡沒有一筆引用是 AI 打的","揭露聲明寫出工具、日期、用在哪一步"]
+ },
+ prompts:[
+  {name:"角色：規劃者",text:"你是研究規劃助理。我的研究問題是：{問題}\n請產出：\n1. 2 到 3 個子問題。\n2. 搜尋概念與中英文關鍵詞、布林搜尋式。\n3. 納入條件與排除條件（年份、族群、研究設計、語言）。\n4. 預計使用的資料庫與理由。\n不要開始搜尋，先等我確認。"},
+  {name:"角色：篩選員",text:"你是文獻篩選員。以下是納入與排除條件，以及一批文獻的題名與摘要。\n每一篇請判斷：納入／排除／不確定，並用一句話寫理由，理由要對應到哪一條條件。\n最後統計三類各幾篇。\n\n條件：{條件}\n文獻：{清單}"},
+  {name:"角色：審查員（請換一家 AI）",text:"你是嚴格的審稿人。請審查下面這份文獻探討初稿：\n1. 哪些論點證據不足或結論太強？\n2. 有沒有重要觀點只引用單一研究？\n3. 段落之間的邏輯有沒有斷掉？\n4. 有沒有看起來像是事實、卻沒有引用的句子？\n逐條列出，附上位置。不要改寫全文。"},
+  {name:"AI 使用揭露聲明範本",text:"本文於{文獻搜尋、摘要整理、語句修飾}階段，使用{工具名稱}（使用日期：{YYYY-MM-DD}）協助{具體做了什麼}。\n所有引用文獻皆由作者逐筆查證原文；文中論點、分析與結論由作者自行判斷並負責。\n（請依學校與投稿期刊的規定調整格式。）"}
+ ],
+ pitfalls:[
+  ["整條交給 AI 一次跑完","錯誤會一路傳下去，最後很難找。","每一棒交接時都停下來看。"],
+  ["篩選沒有理由","之後說不出為什麼排除，也無法重現。","每篇都要一句理由，對應到條件。"],
+  ["審查員和寫作者是同一個 AI","它比較會替自己辯護。","審查換一家 AI，或請同學互審。"],
+  ["沒有揭露","可能違反學校或期刊規定。","寫揭露聲明，並保留流程紀錄。"]
+ ],
+ homework:["結業作品：初稿＋文獻矩陣＋檢證紀錄＋流程紀錄表＋揭露聲明。","寫 200 字反思：七天下來，你會保留哪三個步驟在自己的研究裡？"],
+ links:[["Day 7 投影片","slides/day07.html"],["Day 7 闖關頁","workshop/day07.html"],["講者實例：一個人的 AI 團隊（iThome 鐵人賽系列）","https://ithelp.ithome.com.tw/articles/10401930"]]
+}
+];
+
+var TABS=[["goals","學習目標"],["flow","課堂流程"],["tools","工具準備"],["steps","操作步驟"],["practice","動手練習"],["prompts","Prompt 範本"],["pits","常見坑"],["hw","課後作業"]];
+
+var stopsEl=document.getElementById("stops");
+var panel=document.getElementById("dayPanel");
+var done=store.get("done",{});
+var cur=1, curTab=store.get("tab","goals");
+
+function renderStops(){
+  stopsEl.innerHTML=DAYS.map(function(d){
+    return '<button type="button" role="tab" class="stop'+(done[d.n]?' done':'')+'" id="stop-'+d.n+'" aria-selected="'+(d.n===cur)+'" aria-controls="dayPanel" data-n="'+d.n+'"><span class="dot">D'+d.n+'</span><span class="t">'+esc(d.short)+'</span></button>';
+  }).join("");
+}
+function list(arr){return "<ul>"+arr.map(function(x){return "<li>"+esc(x)+"</li>";}).join("")+"</ul>";}
+function chip(t){return t==="free"?'<span class="chip free">免費可用</span>':'<span class="chip paid">需付費或依方案</span>';}
+
+function paneHTML(d,tab){
+  if(tab==="goals"){
+    var h="<h4>今天學完，你能：</h4>"+list(d.goals);
+    if(d.apps){h+='<h4>五大應用一覽</h4><ol class="steps">'+d.apps.map(function(a){return "<li><b>"+esc(a[0])+"</b>"+esc(a[1])+"</li>";}).join("")+"</ol>";}
+    if(d.roles){h+='<h4>六個角色與人工關卡</h4><div class="tbl"><table><thead><tr><th>角色</th><th>做什麼</th><th>人工關卡</th></tr></thead><tbody>'+d.roles.map(function(r){return "<tr><td><b>"+esc(r[0])+"</b></td><td>"+esc(r[1])+"</td><td>"+esc(r[2])+"</td></tr>";}).join("")+"</tbody></table></div>";}
+    return h;
+  }
+  if(tab==="flow"){
+    return '<h4>3 小時課堂流程</h4><div class="timeline">'+d.minutes.map(function(m){return '<div class="row"><span class="min">'+m[0]+'</span><div class="what"><b>'+esc(m[1])+'</b>'+esc(m[2])+'</div></div>';}).join("")+'</div><p class="note">要壓成 2 小時：講解與示範各減 10 分鐘，動手時間改為課後完成。</p>';
+  }
+  if(tab==="tools"){
+    return d.tools.map(function(t){return '<div class="tool"><b>'+esc(t.name)+'</b>'+chip(t.tag)+'<div>'+esc(t.note)+'</div></div>';}).join("")+'<h4>相關連結</h4><div class="links">'+d.links.map(function(l){return '<a href="'+l[1]+'" target="_blank" rel="noopener">'+esc(l[0])+'</a>';}).join("")+'</div>';
+  }
+  if(tab==="steps"){
+    return '<ol class="steps">'+d.steps.map(function(s){return "<li><b>"+esc(s[0])+"</b>"+esc(s[1])+"</li>";}).join("")+"</ol>";
+  }
+  if(tab==="practice"){
+    var key="chk"+d.n, saved=store.get(key,{});
+    return '<div class="cols"><div><h4>'+esc(d.practice.title)+'</h4><ol>'+d.practice.items.map(function(x){return "<li>"+esc(x)+"</li>";}).join("")+'</ol></div><div><h4>交件前自我檢核</h4><ul class="check-list">'+d.practice.check.map(function(c,i){var id="pc-"+d.n+"-"+i;return '<li><input type="checkbox" id="'+id+'" data-key="'+key+'" data-i="'+i+'"'+(saved[i]?" checked":"")+'><label for="'+id+'">'+esc(c)+'</label></li>';}).join("")+'</ul></div></div>';
+  }
+  if(tab==="prompts"){
+    return '<p class="muted small" style="margin-top:0">大括號 { } 裡的文字換成你自己的內容。</p>'+d.prompts.map(function(p,i){return '<div class="prompt"><div class="prompt-h"><b>'+esc(p.name)+'</b><button type="button" class="copy" data-d="'+d.n+'" data-p="'+i+'">複製</button></div><pre id="pr-'+d.n+'-'+i+'">'+esc(p.text)+'</pre></div>';}).join("");
+  }
+  if(tab==="pits"){
+    return d.pitfalls.map(function(p){return '<div class="pit"><span class="tag">坑</span><div><b>'+esc(p[0])+'</b>：'+esc(p[1])+'</div><div class="fix">怎麼避：'+esc(p[2])+'</div></div>';}).join("");
+  }
+  if(tab==="hw"){
+    return "<h4>課後作業</h4>"+list(d.homework);
+  }
+  return "";
+}
+
+function renderPanel(){
+  var d=DAYS[cur-1];
+  panel.innerHTML='<div class="day-top"><span class="eyebrow">DAY '+d.n+' / 7</span><h3>'+esc(d.title)+'</h3><p class="thesis">'+esc(d.thesis)+'</p><span class="outcome"><b>今日產出</b>'+esc(d.outcome)+'</span> <a class="slides-link" href="'+d.links[0][1]+'" target="_blank" rel="noopener">看 Day '+d.n+' 投影片 ↗</a> <a class="slides-link ws" href="'+d.links[1][1]+'" target="_blank" rel="noopener">進入 Day '+d.n+' 闖關頁 ↗</a></div>'+
+   '<div class="tabs" role="tablist" aria-label="Day '+d.n+' 分頁">'+TABS.map(function(t){return '<button type="button" role="tab" class="tab" data-tab="'+t[0]+'" aria-selected="'+(t[0]===curTab)+'">'+t[1]+'</button>';}).join("")+'</div>'+
+   '<div class="pane" role="tabpanel">'+paneHTML(d,curTab)+'</div>'+
+   '<div class="donebar"><span>'+(done[d.n]?"✓ 這一天標記為已完成":"做完練習和作業後，標記這一天")+'</span><span style="display:flex;gap:8px;flex-wrap:wrap">'+
+   (cur>1?'<button type="button" class="btn ghost" data-go="'+(cur-1)+'">← Day '+(cur-1)+'</button>':'')+
+   '<button type="button" class="btn" id="doneBtn">'+(done[d.n]?"取消完成":"標記完成")+'</button>'+
+   (cur<7?'<button type="button" class="btn ghost" data-go="'+(cur+1)+'">Day '+(cur+1)+' →</button>':'')+
+   '</span></div>';
+}
+function go(n,scroll){
+  cur=n; renderStops(); renderPanel();
+  try{history.replaceState(null,"","#day"+n);}catch(e){}
+  if(scroll){panel.scrollIntoView({behavior:"smooth",block:"start"});}
+}
+
+stopsEl.addEventListener("click",function(e){var b=e.target.closest(".stop");if(b){go(+b.dataset.n,false);}});
+stopsEl.addEventListener("keydown",function(e){
+  if(e.key==="ArrowRight"||e.key==="ArrowLeft"){var n=cur+(e.key==="ArrowRight"?1:-1);if(n>=1&&n<=7){go(n,false);document.getElementById("stop-"+n).focus();}}
+});
+panel.addEventListener("click",function(e){
+  var t=e.target.closest(".tab");
+  if(t){curTab=t.dataset.tab;store.set("tab",curTab);renderPanel();var nt=panel.querySelector('.tab[data-tab="'+curTab+'"]');if(nt){nt.focus();}return;}
+  var g=e.target.closest("[data-go]");
+  if(g){go(+g.dataset.go,true);return;}
+  if(e.target.id==="doneBtn"){done[cur]=!done[cur];store.set("done",done);renderStops();renderPanel();return;}
+  var c=e.target.closest(".copy");
+  if(c){
+    var pre=document.getElementById("pr-"+c.dataset.d+"-"+c.dataset.p);
+    var txt=DAYS[+c.dataset.d-1].prompts[+c.dataset.p].text;
+    var ok=function(){c.textContent="已複製";c.classList.add("done");setTimeout(function(){c.textContent="複製";c.classList.remove("done");},1600);};
+    var fallback=function(){var r=document.createRange();r.selectNodeContents(pre);var s=getSelection();s.removeAllRanges();s.addRange(r);c.textContent="已選取，按 Ctrl＋C";};
+    try{navigator.clipboard.writeText(txt).then(ok,fallback);}catch(err){fallback();}
+  }
+});
+panel.addEventListener("change",function(e){
+  var i=e.target;if(i.type==="checkbox"&&i.dataset.key){var s=store.get(i.dataset.key,{});s[i.dataset.i]=i.checked;store.set(i.dataset.key,s);}
+});
+
+/* ---------- 小測驗 ---------- */
+var QUIZ=[
+ {q:"AI 給了一篇文獻和 DOI。你把 DOI 貼到 doi.org，打開的是另一篇題名完全不同的論文。",a:"bad",why:"DOI 是真的，但被接到錯的文獻上，這是張冠李戴。這條引用不能用，要用題名重新查。"},
+ {q:"你問了三家 AI，三家都說「X 能提升學習成效」，但都沒有附任何文獻。",a:"warn",why:"三家一致只代表值得優先查，不是證據。AI 可能共享同樣的錯誤來源。要回到資料庫找到研究。"},
+ {q:"文獻存在、書目正確。原文是對 120 位大學生做的實驗，AI 卻寫「研究證實此方法適用於所有成人」。",a:"warn",why:"文獻是真的，但 AI 把結論推得太廣，屬於過度推論。引用時要寫清楚樣本與情境。"},
+ {q:"文獻存在、書目正確、沒有撤稿紀錄，原文第 12 頁寫的結果和 AI 描述一致。",a:"ok",why:"三層都過了：存在、沒有撤稿、原文支持。記下頁碼就可以用。"},
+ {q:"文獻存在、書目正確，但在 Retraction Watch 查到這篇已經被撤稿。",a:"bad",why:"撤稿的論文不能當作支持證據。若要討論它，只能寫明它已被撤稿。"}
+];
+var LBL={ok:"✅ 可以用",warn:"⚠️ 要再查或改寫",bad:"❌ 不能用"};
+var answered=store.get("quiz",{});
+function renderQuiz(){
+  var box=document.getElementById("quizBox"), right=0;
+  box.innerHTML=QUIZ.map(function(q,i){
+    var my=answered[i];
+    if(my===q.a){right++;}
+    return '<div class="q"><p><b>情境 '+(i+1)+'</b>　'+esc(q.q)+'</p><div class="opts">'+["ok","warn","bad"].map(function(k){
+      var cls="";if(my){if(k===q.a){cls="right";}else if(k===my){cls="wrong";}}
+      return '<button type="button" data-q="'+i+'" data-k="'+k+'" class="'+cls+'"'+(my?' aria-pressed="'+(k===my)+'"':'')+'>'+LBL[k]+'</button>';
+    }).join("")+'</div>'+(my?'<div class="why">'+(my===q.a?"答對。":"正解是「"+LBL[q.a]+"」。")+esc(q.why)+'</div>':'')+'</div>';
+  }).join("")+'<div><button type="button" class="btn ghost" id="quizReset">重新作答</button></div>';
+  document.getElementById("quizScore").textContent=right+" / "+QUIZ.length;
+}
+document.getElementById("quizBox").addEventListener("click",function(e){
+  var b=e.target.closest("[data-q]");
+  if(b){answered[b.dataset.q]=b.dataset.k;store.set("quiz",answered);renderQuiz();return;}
+  if(e.target.id==="quizReset"){answered={};store.set("quiz",answered);renderQuiz();}
+});
+
+/* ---------- 工具表 ---------- */
+var TOOLS=[
+ ["ChatGPT","D1 D2 D7","free","免費版可用；進階功能依方案","個人帳號","設定裡可以選擇是否讓對話用於改進模型 ⚠️ 選單位置以當天為準"],
+ ["Claude","D1 D2 D3 D7","free","免費版可用；連接器與深度研究依方案 ⚠️","個人帳號","不要上傳個資與未發表資料"],
+ ["Gemini","D1 D2 D7","free","免費版可用；筆記本先開放付費方案","個人 Google 帳號（建議）","學校帳號功能可能被關閉 ⚠️"],
+ ["Gemini 筆記本","D6","paid","付費方案網頁版先開放 ⚠️","個人 Google 帳號","與 NotebookLM 同步，分享前確認來源"],
+ ["NotebookLM","D6","free","免費","個人 Google 帳號","只根據來源回答，但仍要點回原文"],
+ ["Claude 學術連接器","D3","paid","依方案 ⚠️；Scholar Gateway 需驗證","Claude 帳號，第一次使用需授權","Scholar Gateway 目前只含 Wiley 內容"],
+ ["本機 MCP server","D3 進階","free","開源免費","Claude Desktop＋Node.js 或 Python","第三方維護，安裝前看權限與更新紀錄"],
+ ["OpenRouter","D4","free","有免費模型（有頻率限制）；付費按用量","OpenRouter 帳號＋API 金鑰","設花費上限；金鑰不外流；確認資料使用政策 ⚠️"],
+ ["JASP","D4","free","免費開源","下載安裝，免帳號","AI 解讀會送出結果給模型，用去識別資料"],
+ ["Zotero＋Connector","D5","free","免費；雲端同步空間有限","Zotero 帳號（同步用）＋瀏覽器擴充","中文文獻書目常需手動補"],
+ ["ChatGPT for Word","D5","free","所有方案含免費版","ChatGPT 帳號＋Word；組織版需管理員允許","對話與一般 ChatGPT 紀錄分開；東華帳號待實測 ⚠️"],
+ ["doi.org／Crossref／Retraction Watch","D2","free","免費","免帳號","每天都會用到的查核工具"]
+];
+var filt="all";
+function renderTools(){
+  document.getElementById("toolRows").innerHTML=TOOLS.filter(function(t){return filt==="all"||t[2]===filt;}).map(function(t){
+    return "<tr><td><b>"+esc(t[0])+"</b></td><td class=\"days\">"+esc(t[1])+"</td><td>"+chip(t[2])+"<div class=\"small\">"+esc(t[3])+"</div></td><td>"+esc(t[4])+"</td><td>"+esc(t[5])+"</td></tr>";
+  }).join("");
+}
+document.getElementById("toolFilters").addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b){return;}
+  filt=b.dataset.f;
+  Array.prototype.forEach.call(this.querySelectorAll("button"),function(x){x.setAttribute("aria-pressed",String(x===b));});
+  renderTools();
+});
+
+/* ---------- 課前準備 ---------- */
+var PREP={
+ acc:["ChatGPT 帳號（免費版即可）","Claude 帳號（免費版即可）","個人 Google 帳號（Gemini、NotebookLM）","OpenRouter 帳號（Day 4 前）","Zotero 帳號（同步用）","可登入 Word 的 Microsoft 帳號"],
+ ins:["安裝 JASP（Day 4 前）","安裝 Zotero 與瀏覽器 Zotero Connector","確認 Word 裡有 Zotero 外掛","從 Microsoft Marketplace 安裝 ChatGPT for Word（Day 5 前）","準備研究題目一句話","準備自己領域 3 到 5 篇 PDF"]
+};
+var prepSaved=store.get("prep",{});
+function renderPrep(){
+  ["acc","ins"].forEach(function(g){
+    var n=0;
+    document.getElementById("prep-"+g).innerHTML=PREP[g].map(function(x,i){var k=g+i;if(prepSaved[k]){n++;}return '<li><input type="checkbox" id="pp-'+k+'" data-pk="'+k+'"'+(prepSaved[k]?" checked":"")+'><label for="pp-'+k+'">'+esc(x)+'</label></li>';}).join("");
+    document.getElementById("m-"+g).style.width=(n/PREP[g].length*100)+"%";
+  });
+}
+document.getElementById("prep").addEventListener("change",function(e){
+  var k=e.target.dataset.pk;if(k){prepSaved[k]=e.target.checked;store.set("prep",prepSaved);renderPrep();}
+});
+
+/* ---------- 深淺色 ---------- */
+document.getElementById("themeBtn").addEventListener("click",function(){
+  var r=document.documentElement, now=r.getAttribute("data-theme");
+  var isDark=now?now==="dark":matchMedia("(prefers-color-scheme: dark)").matches;
+  r.setAttribute("data-theme",isDark?"light":"dark");
+});
+
+/* ---------- 啟動 ---------- */
+var m=/^#day([1-7])$/.exec(location.hash||"");
+if(m){cur=+m[1];}
+if(!TABS.some(function(t){return t[0]===curTab;})){curTab="goals";}
+renderStops(); renderPanel(); renderQuiz(); renderTools(); renderPrep();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Day 7 AI Agent 研究工作流</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;700&display=swap">
+<style>
+
+
+:root{
+  --paper:#F6EEDD; --card:#FFFBF2; --ink:#1B2420; --muted:#5B655F;
+  --green:#1F4A3A; --green-ink:#F6EEDD; --gold:#C99A2E; --gold-soft:#F2E3B8;
+  --navy:#1C2B3A; --navy-ink:#EEF1F4; --line:#E0D3B6;
+  --ok:#24704F; --ok-soft:#DCEFE3; --warn:#B23A2B; --warn-soft:#F7DDD7;
+  --font-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+  --base:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111A15; --card:#18241E; --ink:#ECE5D4; --muted:#A7B0A8;
+    --green:#0E2E22; --green-ink:#F1E9D6; --gold:#E2B85A; --gold-soft:#3A3120;
+    --navy:#0F1B27; --navy-ink:#E4E9EE; --line:#2C3D33;
+    --ok:#7FD0A6; --ok-soft:#1C3A2B; --warn:#F09A86; --warn-soft:#3D221D; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111A15; --card:#18241E; --ink:#ECE5D4; --muted:#A7B0A8;
+  --green:#0E2E22; --green-ink:#F1E9D6; --gold:#E2B85A; --gold-soft:#3A3120;
+  --navy:#0F1B27; --navy-ink:#E4E9EE; --line:#2C3D33;
+  --ok:#7FD0A6; --ok-soft:#1C3A2B; --warn:#F09A86; --warn-soft:#3D221D; color-scheme:dark;
+}
+:root[data-proj="on"]{--base:20px}
+*{box-sizing:border-box}
+html{font-size:var(--base);scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:1rem;line-height:1.75;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+a{color:var(--ok)}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:48rem;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance}
+p{margin:0 0 .9rem}
+header.top{padding-block:2.4rem 1.6rem}
+.eyebrow{font-size:.82rem;letter-spacing:.1em;color:var(--ok);font-weight:700}
+h1{font-size:2.15rem;line-height:1.3;margin:.35rem 0 .7rem;font-weight:900}
+.lede{font-size:1.06rem;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:.3rem 1.2rem;font-size:.88rem;color:var(--muted)}
+.tools{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.1rem;align-items:center}
+.chip{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:.3rem 1rem;font-size:.92rem}
+.chip[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.mycards{display:inline-flex;align-items:center;gap:.6rem;background:var(--navy);color:var(--navy-ink);border:2px solid var(--gold);border-radius:999px;padding:.4rem 1.1rem;font-weight:700;text-decoration:none}
+.mycards .cnt{background:var(--gold);color:var(--navy);border-radius:999px;padding:0 .55rem;font-size:.85rem;font-variant-numeric:tabular-nums}
+.band{background:var(--green);color:var(--green-ink);margin-top:2.2rem;scroll-margin-top:0}
+.band .wrap{padding-block:1.6rem 1.4rem}
+.band .big{font-size:3.4rem;line-height:1.1;font-weight:900;color:var(--gold);letter-spacing:.04em;margin:0}
+.band .sub{font-size:1.25rem;font-weight:700;margin:.4rem 0 0}
+.band .tag{font-family:var(--font-mono);font-size:.8rem;color:var(--gold);opacity:.9;letter-spacing:.12em}
+section.blk{padding-block:1.8rem 1rem}
+.ask{background:var(--ok-soft);border-radius:12px;padding:1rem 1.1rem;margin:.6rem 0 1rem}
+.ask b{color:var(--ok)}
+.doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:1rem 0 .4rem}
+.door{background:var(--card);border:1.5px solid var(--line);border-top:5px solid var(--gold);border-radius:10px;padding:.8rem .9rem;min-width:0}
+.door .k{font-weight:700}
+.door .v{font-size:.85rem;color:var(--muted);word-break:break-all}
+.account{text-align:center;font-size:.92rem;color:var(--muted);margin:.2rem 0 1rem}
+.account b{color:var(--ink)}
+.tabs{display:flex;gap:.4rem;margin:.6rem 0;flex-wrap:wrap}
+.tab{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:.35rem 1rem}
+.tab[aria-selected="true"]{background:var(--navy);color:var(--navy-ink);border-color:var(--navy)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;vertical-align:top;padding:.55rem .6rem;border-bottom:1px solid var(--line)}
+th{font-size:.82rem;letter-spacing:.06em;color:var(--muted)}
+.pill{display:inline-block;font-size:.78rem;padding:.05rem .55rem;border-radius:999px;font-weight:700;white-space:nowrap}
+.pill.go{background:var(--ok-soft);color:var(--ok)}
+.pill.stay{background:var(--gold-soft);color:var(--ink)}
+.pill.sep{background:var(--warn-soft);color:var(--warn)}
+.note{font-size:.85rem;color:var(--muted)}
+.claim{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin:1rem 0 .4rem;padding:.8rem 1rem;border:2px dashed var(--gold);border-radius:12px}
+.claim button{background:var(--navy);color:var(--navy-ink);border:0;border-radius:999px;padding:.35rem 1.1rem;font-weight:700}
+.claim button[aria-pressed="true"]{background:var(--gold);color:var(--navy)}
+.claim span{font-size:.9rem;color:var(--muted)}
+.app{font-size:1.3rem;font-weight:900;margin:1.4rem 0 .4rem;display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap}
+.app small{font-size:.85rem;font-weight:500;color:var(--muted)}
+.steps{list-style:none;margin:.6rem 0 0;padding:0;display:grid;gap:.8rem}
+.step{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:1rem 1.1rem;min-width:0}
+.step h3{margin:0 0 .35rem;font-size:1.05rem;display:flex;gap:.5rem;align-items:baseline}
+.sn{font-family:var(--font-mono);color:var(--gold);font-weight:700}
+.step > p:last-child{margin-bottom:0}
+.path{font-family:var(--font-mono);font-size:.84rem;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:.08rem .45rem;display:inline-block;margin:.1rem 0;word-break:break-word}
+.why{font-size:.9rem;color:var(--muted)}
+.done{font-size:.88rem;border-left:4px solid var(--ok);padding-left:.6rem;margin-top:.5rem}
+.os-win,.os-mac{display:none}
+:root[data-os="win"] .os-win{display:block}
+:root[data-os="mac"] .os-mac{display:block}
+.osbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;font-size:.9rem;margin:.4rem 0}
+.copybox{position:relative;background:var(--paper);border:1.5px dashed var(--ok);border-radius:10px;margin:.6rem 0;min-width:0}
+.copybox pre{margin:0;padding:.8rem .9rem 2.5rem;white-space:pre-wrap;word-break:break-word;font-family:var(--font-body);font-size:.93rem;line-height:1.7}
+.copybtn{position:absolute;right:.5rem;bottom:.5rem;border:0;background:var(--ok);color:var(--card);border-radius:8px;padding:.2rem .8rem;font-size:.85rem;max-width:calc(100% - 1rem)}
+.copybtn.ok{background:var(--gold);color:var(--navy)}
+.minichk{margin-top:1rem;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:.8rem 1rem}
+.minichk .hd{font-weight:700;margin-bottom:.2rem}
+.minichk label{display:flex;gap:.5rem;align-items:flex-start;padding:.25rem 0;font-size:.95rem}
+.minichk input{margin-top:.45rem;accent-color:var(--ok);width:1.05rem;height:1.05rem;flex:none}
+.lines{display:grid;gap:.8rem}
+.line{display:grid;grid-template-columns:2.6rem minmax(0,1fr);gap:.7rem;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:1rem}
+.line .num{font-size:2rem;font-weight:900;color:var(--warn);line-height:1}
+.line h3{margin:0 0 .3rem;font-size:1.1rem}
+.builder{background:var(--card);border:2px solid var(--gold);border-radius:14px;padding:1rem 1.1rem;margin-top:.6rem}
+.bstep{display:grid;grid-template-columns:2rem minmax(0,1fr);gap:.6rem;align-items:start;padding:.7rem 0;border-bottom:1px dashed var(--line)}
+.bstep:last-child{border-bottom:0}
+.circ{width:1.8rem;height:1.8rem;border-radius:50%;background:var(--gold);color:var(--navy);display:grid;place-items:center;font-weight:900;font-size:.95rem}
+.bstep .lbl{font-weight:700;margin-bottom:.4rem}
+.taskchips{display:flex;flex-wrap:wrap;gap:.45rem}
+.taskchips .chip[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:var(--card)}
+.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem}
+.fields label{display:flex;flex-direction:column;gap:.25rem;font-size:.85rem;color:var(--muted);min-width:0}
+.fields input{font:inherit;font-size:.95rem;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:.45rem .6rem;min-width:0;width:100%}
+.fields input:focus{border-color:var(--ok);outline:none}
+.ptcf{border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--paper)}
+.prow{display:grid;grid-template-columns:5.5rem minmax(0,1fr);gap:.6rem;padding:.6rem .8rem;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
+.prow .k{font-weight:700;display:flex;gap:.4rem;align-items:baseline}
+.prow .k b{display:inline-grid;place-items:center;width:1.4rem;height:1.4rem;border-radius:4px;background:var(--navy);color:var(--navy-ink);font-size:.8rem;font-family:var(--font-mono)}
+.prow .v{font-size:.93rem;min-width:0;word-break:break-word}
+.fill{background:var(--ok-soft);color:var(--ok);font-weight:700;border-radius:4px;padding:0 .2rem}
+.miss{color:var(--warn);font-weight:700}
+.legend{font-size:.82rem;color:var(--muted);margin:.4rem 0 0}
+.actions{display:flex;flex-wrap:wrap;gap:.5rem}
+.btn{display:inline-flex;align-items:center;gap:.3rem;border-radius:8px;padding:.45rem 1rem;font-weight:700;text-decoration:none;border:1.5px solid var(--ok)}
+.btn.primary{background:var(--ok);color:var(--card)}
+.btn.ghost{background:transparent;color:var(--ok)}
+.status{font-size:.88rem;color:var(--ok);min-height:1.4em;margin-top:.4rem}
+.share{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);gap:.7rem;align-items:center;margin:1rem 0 .4rem}
+.agent{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:.8rem;text-align:center;min-width:0}
+.agent .k{font-weight:700}
+.agent .v{font-size:.82rem;color:var(--muted)}
+.arrow{font-size:.82rem;color:var(--ok);display:block}
+.folder{background:var(--gold-soft);border:2px solid var(--gold);border-radius:4px 14px 14px 14px;padding:.8rem 1rem;min-width:0}
+.folder .k{font-weight:700;margin-bottom:.3rem}
+.folder ul{margin:0;padding-left:1.1rem;font-size:.88rem}
+code{font-family:var(--font-mono);font-size:.86rem}
+.sync{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.4rem .6rem;margin:.8rem 0 1rem;font-size:.9rem}
+.sync .m{background:var(--card);border:1.5px solid var(--line);border-radius:999px;padding:.15rem .8rem}
+.sync .gh{background:var(--navy);color:var(--navy-ink);border-radius:999px;padding:.15rem .9rem;font-weight:700}
+.skills{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem;margin-top:1rem}
+.skill{perspective:900px;border:0;background:none;padding:0;text-align:left;color:inherit;min-width:0;display:grid}
+.skill .inner{position:relative;display:grid;min-height:13rem;transition:transform .5s;transform-style:preserve-3d}
+.skill[aria-pressed="true"] .inner{transform:rotateY(180deg)}
+.face{grid-area:1/1;position:relative;border-radius:14px;padding:1rem;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;background:var(--navy);color:var(--navy-ink);border:2px solid var(--gold)}
+.face.back{transform:rotateY(180deg);background:var(--card);color:var(--ink)}
+.face .no{font-size:2.2rem;font-weight:900;color:var(--gold);line-height:1;font-family:var(--font-mono)}
+.face .ttl{font-weight:900;font-size:1.05rem;margin:.5rem 0 .3rem}
+.face .one{font-size:.88rem;opacity:.9}
+.face .hint{margin-top:auto;font-size:.78rem;opacity:.75;text-align:right}
+.badge{position:absolute;top:.8rem;right:.8rem;font-size:.75rem;font-weight:700;border-radius:999px;padding:.05rem .6rem;background:var(--line);color:var(--ink)}
+.skill.on .badge{background:var(--gold);color:var(--navy)}
+.face.back .pts{display:block;margin-top:.2rem;font-size:.88rem;line-height:1.6}
+.face.back .pt{display:block;padding-left:1rem;position:relative}
+.face.back .pt::before{content:"・";position:absolute;left:0;color:var(--gold)}
+.skill:not(.on) .face.front{filter:saturate(.35);opacity:.85}
+.tip{font-size:1rem;font-weight:700;border-left:5px solid var(--gold);padding-left:.8rem;margin:1.2rem 0}
+.progress{display:flex;align-items:center;gap:.8rem;margin-top:1rem;font-size:.9rem;flex-wrap:wrap}
+.bar{flex:1;min-width:8rem;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar span{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+footer{padding-block:2rem 3rem;font-size:.85rem;color:var(--muted)}
+footer ul{padding-left:1.1rem;margin:.4rem 0}
+@media (max-width:720px){
+  h1{font-size:1.7rem}
+  .band .big{font-size:2.6rem}
+  .doors,.fields,.skills,.share{grid-template-columns:minmax(0,1fr)}
+  .prow{grid-template-columns:minmax(0,1fr);gap:.2rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+
+.navrow{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem;font-size:.9rem}
+.navrow a{color:var(--ok);font-weight:700}
+.quiz{display:grid;gap:.8rem;margin-top:.8rem}
+.qcard{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:1rem 1.1rem;min-width:0}
+.qcard.boss{border:2px solid var(--warn);background:linear-gradient(180deg,var(--warn-soft),var(--card) 40%)}
+.qcard .qn{font-family:var(--font-mono);font-size:.8rem;color:var(--gold);font-weight:700;letter-spacing:.08em}
+.qcard.boss .qn{color:var(--warn)}
+.qcard .qt{font-weight:700;margin:.2rem 0 .6rem}
+.qcard .qs{font-size:.9rem;color:var(--muted);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:.5rem .7rem;margin:-.2rem 0 .6rem;white-space:pre-wrap}
+.opts{display:flex;flex-wrap:wrap;gap:.45rem}
+.opts button{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:.35rem .9rem;text-align:left;font-size:.95rem;max-width:100%}
+.opts button:disabled{cursor:default}
+.opts button.right{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:700}
+.opts button.wrong{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.qcard .ans{margin-top:.6rem;font-size:.92rem;border-left:4px solid var(--ok);padding-left:.6rem}
+.qcard .ans.no{border-left-color:var(--warn)}
+.score{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin:.6rem 0 0;padding:.7rem 1rem;border:2px dashed var(--gold);border-radius:12px}
+.score b{font-family:var(--font-mono);font-size:1.1rem}
+.score .chip{font-size:.85rem}
+.openai{display:flex;flex-wrap:wrap;gap:.5rem;margin:.4rem 0 .8rem}
+
+
+.step .sub{margin:.3rem 0 .6rem;padding-left:1.4rem}
+.step .sub li{margin:.3rem 0;padding-left:.15rem}
+.step .sub li::marker{color:var(--gold);font-weight:700;font-family:var(--font-mono)}
+:root[data-os="win"] .step li.os-win,:root[data-os="mac"] .step li.os-mac{display:list-item}
+.see{font-size:.92rem;background:var(--ok-soft);border-radius:8px;padding:.45rem .7rem;margin:.4rem 0}
+.see b{color:var(--ok)}
+.stuck{font-size:.92rem;background:var(--warn-soft);border-radius:8px;padding:.45rem .7rem;margin:.4rem 0}
+.stuck b{color:var(--warn)}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<div class="eyebrow">AI 研究工具七日課・Day 7 / 7・AI Agent 研究工作流</div>
+<h1>你當組長：讓 AI 團隊分工寫文獻探討</h1>
+<p class="lede">跟著現場做，也可以帶回家照著檢查。「做得到」每一步都拆成逐步點擊，附「你應該看到」和「卡住了」怎麼辦。每過一段就解鎖一張技能卡，「闖得過」要答對才拿得到；沒解鎖也能往下看，跟不上照樣往下走。</p>
+<div class="meta"><span>每次 3 小時・電腦教室</span><span>講師：陳文盛老師（國立東華大學通識教育中心）</span><span>選單名稱查核：2026-10-21（ChatGPT、Claude）／2026-10-19（其他）</span></div>
+<div class="tools"><a class="mycards" href="#bring">我的技能卡 <span class="cnt" id="cardCount">0 / 5</span></a><button type="button" class="chip" id="projBtn" aria-pressed="false">投影大字</button></div>
+<div class="osbar">你的電腦是：<button type="button" class="chip" data-os="win" aria-pressed="false">Windows</button><button type="button" class="chip" data-os="mac" aria-pressed="false">Mac</button><span class="note">步驟會跟著切換</span></div>
+<div class="navrow"><a href="../index.html">課程總覽</a><a href="../slides/day07.html">Day 7 投影片</a><span>上一天：Day 6 Gemini Notebook 研究五大應用</span></div>
+</header>
+</div>
+<div class="band" id="b1"><div class="wrap"><div class="tag">01・看得懂</div><p class="big">看得懂</p><p class="sub">六個角色，一個組長</p></div></div>
+<section class="blk wrap">
+<div class="ask"><b>同學常問：</b>「可以讓 AI 一次把整篇文獻探討寫完嗎？」<br><b>答案：</b>可以跑，但前面的錯會一路傳下去：規劃時問題被改掉，後面找的文獻全部偏掉；篩選時誤刪關鍵研究，後面就永遠看不到。所以要拆成角色，每一棒你都看過才往下走。</div>
+<div class="doors"><div class="door"><div class="k">六個角色</div><div class="v">規劃、搜尋、篩選<br>萃取、寫作、審查</div></div><div class="door"><div class="k">人工關卡</div><div class="v">每一棒交接<br>你都核對一次</div></div><div class="door"><div class="k">揭露聲明</div><div class="v">寫出工具、日期<br>用在哪一步</div></div></div>
+<p class="account">每個角色都對應前六天學過的一天</p>
+<div class="claim"><button type="button" data-claim="u1">我懂了，收下技能卡 01</button><span>說得出六個角色和為什麼要人工關卡。</span></div>
+</section>
+<div class="band" id="b2"><div class="wrap"><div class="tag">02・做得到</div><p class="big">做得到</p><p class="sub">每一棒交接都停下來看</p></div></div>
+<section class="blk wrap"><ol class="steps">
+<li class="step"><h3><span class="sn">7-1</span>規劃者：先等你確認</h3><ol class="sub"><li>在 Day 1 建的研究專案裡開一個新對話。</li><li>貼上「用得上」的「規劃者」，大括號換成你的研究問題，送出。</li><li>讀它的子問題：每一個都還在回答你原本的問題嗎？</li><li>有偏掉的，直接回：「第 2 個子問題偏了，請改成⋯⋯」。</li><li>確認後，把搜尋式和納入排除條件複製到流程紀錄表的「規劃」那一列。</li></ol><p class="see"><b>你應該看到：</b>一份你點頭過的搜尋策略。</p><p class="why">你要確認研究問題沒有被悄悄改寫成另一個問題。</p><div class="done">完成判準：你確認過搜尋策略和條件。</div></li>
+<li class="step"><h3><span class="sn">7-2</span>搜尋員：用 Day 3 的雷達</h3><ol class="sub"><li>開啟學術連接器，用確認過的搜尋式跑「文獻雷達」（Day 3 的範本）。</li><li>也可以用各家的深度研究功能擴大範圍 ⚠️ 額度依方案不同；只取它找到的文獻，報告文字不直接用。</li><li>把結果和 Day 3 的清單合併、刪掉重複。</li><li>抽 3 到 5 篇用 Day 2 的方法驗存在。</li><li>在流程紀錄表的「搜尋」那一列寫下找到幾篇、存在率多少。</li></ol><p class="see"><b>你應該看到：</b>一份合併後的文獻清單。</p><div class="done">完成判準：抽 3 到 5 篇，用 Day 2 方法驗過存在。</div></li>
+<li class="step"><h3><span class="sn">7-3</span>篩選員：每篇都要理由</h3><ol class="sub"><li>把清單整理成「題名＋摘要」的文字（從資料庫複製，或從 Zotero 匯出）。</li><li>貼「篩選員」範本，連同規劃者的納入排除條件一起送出。</li><li>看結果：每篇有納入、排除或不確定，以及一句對應到條件的理由。</li><li>抽 5 篇被排除的讀摘要，確認沒有誤刪；「不確定」的由你讀摘要決定。</li><li>在流程紀錄表記數字：找到幾篇、排除幾篇（各是什麼理由）、留下幾篇、讀了全文幾篇。</li></ol><p class="see"><b>你應該看到：</b>一張有理由的篩選表，和四個數字。</p><p class="why">這就是系統性回顧 PRISMA 流程圖的精神：讓別人看得出文獻是怎麼篩出來的。</p><div class="done">完成判準：抽看被排除的 5 篇，沒有誤刪關鍵研究。</div></li>
+<li class="step"><h3><span class="sn">7-4</span>萃取員：做成文獻矩陣</h3><ol class="sub"><li>把留下的文獻加進 Day 6 的筆記本。</li><li>跑一次比較表，再決定初稿要寫的 3 個主題。</li><li>請筆記本：「以這 3 個主題為列、文獻為欄，標出哪篇談到哪個主題，並指出出自哪一段。」</li><li>抽幾格點回原文確認標記是對的。</li><li>把矩陣存成試算表。</li></ol><p class="see"><b>你應該看到：</b>一張至少 8 篇 × 3 主題的矩陣。</p><p class="why">只有一篇撐著的主題，寫的時候語氣要保守。</p><div class="done">完成判準：矩陣至少 8 篇 × 3 個主題，抽格點回原文。</div></li>
+<li class="step"><h3><span class="sn">7-5</span>寫作者：論點先、證據後</h3><ol class="sub"><li>在 Word 開新檔，每個主題一個小標。</li><li>每段第一句寫你的論點，接著放 2 到 3 篇證據。</li><li>引用一律用 Zotero 的 Add/Edit Citation 插入。</li><li>可以請 AI 依矩陣寫草稿；貼進來之前，先刪掉草稿裡所有括號引用。</li><li>寫到約 1,500 字，跑一次 Day 5 的「缺引用檢查」。</li></ol><p class="see"><b>你應該看到：</b>約 1,500 字的初稿，每段都有 Zotero 插入的引用。</p><div class="done">完成判準：約 1,500 字初稿，每段都有證據。</div></li>
+<li class="step"><h3><span class="sn">7-6</span>審查員：換一家 AI，再寫揭露聲明</h3><ol class="sub"><li>把初稿貼給另一家 AI（寫作用 ChatGPT，審查就用 Claude 或 Gemini），或請同學互審。</li><li>貼「審查員」範本，送出。</li><li>在流程紀錄表逐條寫：採用或不採用，以及理由。</li><li>依採用的意見修改初稿。</li><li>用「揭露聲明範本」寫 AI 使用揭露，並依學校與目標期刊的規定調整。</li><li>五件一起交：初稿、文獻矩陣、檢證紀錄、流程紀錄表、揭露聲明。</li></ol><p class="see"><b>你應該看到：</b>審查意見每一條都有你的決定和理由。</p><div class="done">完成判準：審查意見都有採用或不採用的理由；揭露聲明寫好。</div></li>
+</ol>
+<div class="minichk"><div class="hd">做完勾一勾（6 項全勾，解鎖技能卡 02）</div><label><input type="checkbox" id="c1">規劃者的策略我確認過</label><label><input type="checkbox" id="c2">搜尋結果抽驗過存在</label><label><input type="checkbox" id="c3">篩選每篇有理由、數量記下來</label><label><input type="checkbox" id="c4">文獻矩陣 8 篇 × 3 主題</label><label><input type="checkbox" id="c5">初稿約 1,500 字、引用由 Zotero 插入</label><label><input type="checkbox" id="c6">換一家 AI 審查，寫了揭露聲明</label></div>
+</section>
+<div class="band" id="b3"><div class="wrap"><div class="tag">03・用得上</div><p class="big">用得上</p><p class="sub">角色指示與揭露聲明</p></div></div>
+<section class="blk wrap"><p>大括號 { } 換成你自己的內容。<b>複製任何一段，就解鎖技能卡 03。</b>今天練習請用公開文獻或範例資料，不要貼真的受試者資料。</p>
+<div class="openai"><a class="btn ghost" href="https://chatgpt.com" target="_blank" rel="noopener">打開 ChatGPT ↗</a><a class="btn ghost" href="https://claude.ai" target="_blank" rel="noopener">打開 Claude ↗</a><a class="btn ghost" href="https://gemini.google.com" target="_blank" rel="noopener">打開 Gemini ↗</a></div>
+<p class="app" style="font-size:1.05rem">角色：規劃者</p><div class="copybox"><pre id="p1">你是研究規劃助理。我的研究問題是：{問題}
+請產出：1. 2 到 3 個子問題　2. 中英文關鍵詞與布林搜尋式　3. 納入與排除條件　4. 預計使用的資料庫與理由
+不要開始搜尋，先等我確認。</pre><button type="button" class="copybtn" data-copy="p1">複製</button></div>
+<p class="app" style="font-size:1.05rem">角色：篩選員</p><div class="copybox"><pre id="p2">你是文獻篩選員。以下是納入與排除條件，以及一批文獻的題名與摘要。
+每一篇判斷：納入／排除／不確定，用一句話寫理由，對應到哪一條條件。最後統計三類各幾篇。
+
+條件：{條件}
+文獻：{清單}</pre><button type="button" class="copybtn" data-copy="p2">複製</button></div>
+<p class="app" style="font-size:1.05rem">角色：審查員（請換一家 AI）</p><div class="copybox"><pre id="p3">你是嚴格的審稿人。請審查這份文獻探討初稿：
+1. 哪些論點證據不足或結論太強？
+2. 有沒有重要觀點只引用單一研究？
+3. 段落邏輯有沒有斷掉？
+4. 有沒有像事實卻沒有引用的句子？
+逐條列出位置，不要改寫全文。</pre><button type="button" class="copybtn" data-copy="p3">複製</button></div>
+<p class="app" style="font-size:1.05rem">AI 使用揭露聲明範本</p><div class="copybox"><pre id="p4">本文於{文獻搜尋、摘要整理、語句修飾}階段，使用{工具名稱}（使用日期：{YYYY-MM-DD}）協助{具體做了什麼}。所有引用文獻皆由作者逐筆查證原文；文中論點、分析與結論由作者自行判斷並負責。</pre><button type="button" class="copybtn" data-copy="p4">複製</button></div>
+</section>
+<div class="band" id="b4"><div class="wrap"><div class="tag">04・闖得過</div><p class="big">闖得過</p><p class="sub">組隊測驗</p></div></div>
+<section class="blk wrap"><p>組隊之前的最後一關。答對 5 題以上解鎖技能卡 04。</p><div class="quiz" id="quiz"></div><div class="score"><span>答對 <b id="qRight">0</b> / 7</span><span class="note" id="qNote"></span><button type="button" class="chip" id="qReset">再挑戰一次</button></div></section>
+<div class="band" id="b5"><div class="wrap"><div class="tag">05・守得住</div><p class="big">守得住</p><p class="sub">結業前的三條線</p></div></div>
+<section class="blk wrap"><div class="lines">
+<div class="line"><div class="num">一</div><div><h3>每一棒都停下來看</h3><p>整條一次跑完，錯誤會一路傳下去，最後很難找。</p></div></div>
+<div class="line"><div class="num">二</div><div><h3>篩選要有理由</h3><p>每篇一句、對應到條件，之後才說得出為什麼排除，也能重現。</p></div></div>
+<div class="line"><div class="num">三</div><div><h3>寫出你用了什麼</h3><p>依學校與期刊規定揭露 AI 使用；AI 不能列為作者，最後一句話是你寫的。</p></div></div>
+</div><div class="claim"><button type="button" data-claim="u5">我記住了，收下技能卡 05</button><span>三條線說得出來。</span></div></section>
+<div class="band" id="bring"><div class="wrap"><div class="tag">06・帶得走</div><p class="big">帶得走</p><p class="sub">過一段解鎖一張，回家隨時打開</p></div></div>
+<section class="blk wrap"><div class="progress"><span id="progText">已解鎖 0 / 5</span><div class="bar"><span id="progBar"></span></div><button type="button" class="chip" id="resetBtn">全部重來</button></div><div class="skills" id="skills"></div>
+<p class="tip">課後作業</p><ul><li>結業作品五件：約 1,500 字初稿、文獻矩陣、檢證紀錄、流程紀錄表、揭露聲明（期限依開課公告）。</li><li>寫 200 字反思：七天下來，你會保留哪三個步驟？為什麼？</li></ul>
+<p class="note">七天每天五張，集滿 35 張就是完整的 AI 研究工作流。技能卡進度只存在這台瀏覽器，換電腦或清除瀏覽資料會歸零。</p>
+</section>
+<footer class="wrap"><p>國立東華大學 通識教育中心｜AI 研究工具七日課。版型沿用慈大長照所工作坊設定課。</p><p>⚠️ 選單名稱常改版：ChatGPT、Claude 依 2026-10-21 實機核對，其他工具依 2026-10-19 網查，以你看到的畫面為準。</p></footer>
+<script>
+var DATA={"n": 7, "quiz": [{"q": "六個角色的正確順序是？", "opts": ["搜尋 → 規劃 → 寫作 → 篩選 → 萃取 → 審查", "規劃 → 搜尋 → 篩選 → 萃取 → 寫作 → 審查", "寫作 → 審查 → 規劃 → 搜尋 → 篩選 → 萃取"], "a": 1, "why": "先定策略、再找、再篩、再整理、再寫、最後審。"}, {"q": "規劃者交出搜尋策略，你最該核對什麼？", "opts": ["字數夠不夠", "研究問題有沒有被改掉", "格式漂不漂亮"], "a": 1, "why": "問題一偏，後面找的文獻全部偏掉。"}, {"q": "篩選員排除了 40 篇，你應該？", "opts": ["全部相信", "抽看被排除的 5 篇", "全部重讀一次"], "a": 1, "why": "抽看排除的，確認沒有誤刪關鍵研究。"}, {"q": "矩陣顯示「主題 B」只有一篇文獻撐著，寫的時候要？", "opts": ["語氣保守，或再補文獻", "寫成「研究一致發現」", "直接刪掉這個主題"], "a": 0, "why": "單一研究撐不起「一致發現」。"}, {"q": "AI 寫的初稿裡有 3 個括號引用，Zotero 庫裡都沒有。", "opts": ["留著", "全部刪掉，從 Zotero 插入真的引用", "改成 Zotero 的格式"], "a": 1, "why": "Day 5 的規則：AI 打的書目當作不存在。"}, {"q": "揭露聲明至少要寫哪三件事？", "opts": ["工具、日期、用在哪一步", "AI 的名字、價錢、評價", "作者、學號、班級"], "a": 0, "why": "寫清楚用了什麼、什麼時候、做了哪一步；論點由作者負責。"}, {"q": "初稿是 ChatGPT 寫的，誰來當審查員最好？", "opts": ["同一個 ChatGPT 對話", "換一家 AI，或請同學互審"], "a": 1, "boss": true, "why": "同一個 AI 比較會替自己辯護，盲點也相同。換一家，角度不同、比較敢挑錯。"}], "qpass": 5, "nchk": 6, "cards": [{"u": "u1", "no": "01", "ttl": "AI 團隊", "one": "六個角色，你當組長", "back": ["規劃、搜尋、篩選", "萃取、寫作、審查", "每一棒你都核對"]}, {"u": "u2", "no": "02", "ttl": "人工關卡", "one": "每一關核對什麼", "back": ["規劃：問題沒被改", "搜尋：抽驗存在", "篩選：抽看排除", "萃取：點回原文", "寫作：每段有證據", "審查：決定改不改"]}, {"u": "u3", "no": "03", "ttl": "角色指示包", "one": "四段範本", "back": ["規劃者：先等確認", "篩選員：每篇有理由", "審查員：換一家", "揭露聲明"]}, {"u": "u4", "no": "04", "ttl": "組隊判斷", "one": "順序與把關", "back": ["順序：規劃到審查", "單一研究語氣保守", "審查換一家 AI"]}, {"u": "u5", "no": "05", "ttl": "結業三條線", "one": "停下來、有理由、要揭露", "back": ["每一棒都停下來看", "篩選要有理由", "寫出你用了什麼"]}]};
+
+(function(){
+  var root=document.documentElement, KEY='air7-ws-d'+DATA.n;
+  function get(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  var st={};try{st=JSON.parse(get(KEY)||'{}')||{}}catch(e){st={}}
+  if(!st.q)st.q={};
+  function save(){set(KEY,JSON.stringify(st))}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+  var os=get('air7-os')||(/Mac/i.test(navigator.platform||'')?'mac':'win');
+  function setOS(v){root.dataset.os=v;document.querySelectorAll('button[data-os]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.os===v))});set('air7-os',v)}
+  document.querySelectorAll('button[data-os]').forEach(function(b){b.addEventListener('click',function(){setOS(b.dataset.os)})});setOS(os);
+  var pb=document.getElementById('projBtn');
+  function setProj(on){if(on){root.dataset.proj='on'}else{delete root.dataset.proj}pb.setAttribute('aria-pressed',String(on));set('air7-proj',on?'1':'0')}
+  pb.addEventListener('click',function(){setProj(root.dataset.proj!=='on')});setProj(get('air7-proj')==='1');
+
+  var isMac=/Mac/i.test(navigator.platform||'');
+  function copyText(text,onok,onfail){
+    function fallback(){var ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);ok?onok():onfail()}
+    try{navigator.clipboard.writeText(text).then(onok,fallback)}catch(e){fallback()}
+  }
+  document.querySelectorAll('.copybtn').forEach(function(btn){btn.addEventListener('click',function(){
+    var el=document.getElementById(btn.dataset.copy);
+    st.copied=true;save();updateCards();
+    copyText(el.textContent,function(){btn.textContent='已複製';btn.classList.add('ok');st.copied=true;save();updateCards();setTimeout(function(){btn.textContent='複製';btn.classList.remove('ok')},1600)},
+      function(){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent=isMac?'已選取，請按 Command＋C':'已選取，請按 Ctrl＋C';st.copied=true;save();updateCards();setTimeout(function(){btn.textContent='複製'},4000)});
+  })});
+
+  // 闖得過
+  var qbox=document.getElementById('quiz');
+  function right(){var r=0;DATA.quiz.forEach(function(q,i){if(st.q[i]===q.a)r++});return r}
+  function renderQuiz(){
+    qbox.innerHTML=DATA.quiz.map(function(q,i){
+      var my=st.q[i], done=(my!==undefined);
+      var opts=q.opts.map(function(o,k){var cls='';if(done){if(k===q.a)cls='right';else if(k===my)cls='wrong'}
+        return '<button type="button" data-q="'+i+'" data-k="'+k+'" class="'+cls+'"'+(done?' disabled':'')+'>'+esc(o)+'</button>'}).join('');
+      var ans=done?'<div class="ans'+(my===q.a?'':' no')+'">'+(my===q.a?'答對了。':'正解是「'+esc(q.opts[q.a])+'」。')+esc(q.why)+'</div>':'';
+      return '<div class="qcard'+(q.boss?' boss':'')+'"><div class="qn">'+(q.boss?'魔王題':'第 '+(i+1)+' 題')+'</div><div class="qt">'+esc(q.q)+'</div>'+
+        (q.scene?'<div class="qs">'+esc(q.scene)+'</div>':'')+'<div class="opts">'+opts+'</div>'+ans+'</div>';
+    }).join('');
+    var r=right(), all=Object.keys(st.q).length===DATA.quiz.length;
+    document.getElementById('qRight').textContent=r;
+    document.getElementById('qNote').textContent= r>=DATA.qpass ? '過關！技能卡 04 已解鎖' : (all ? '還差 '+(DATA.qpass-r)+' 題，按「再挑戰一次」重來' : '答對 '+DATA.qpass+' 題解鎖技能卡 04');
+  }
+  qbox.addEventListener('click',function(e){var b=e.target.closest('button[data-q]');if(!b||b.disabled)return;
+    st.q[+b.dataset.q]=+b.dataset.k;save();renderQuiz();updateCards()});
+  document.getElementById('qReset').addEventListener('click',function(){st.q={};save();renderQuiz();updateCards()});
+
+  // 技能卡
+  var grid=document.getElementById('skills');
+  DATA.cards.forEach(function(c){
+    var b=document.createElement('button');b.type='button';b.className='skill';b.id='card-'+c.u;b.setAttribute('aria-pressed','false');
+    b.innerHTML='<span class="inner"><span class="face front"><span class="badge">未解鎖</span><span class="no">'+c.no+'</span><span class="ttl">'+esc(c.ttl)+'</span><span class="one">'+esc(c.one)+'</span><span class="hint">點我翻面</span></span><span class="face back"><span class="ttl">'+esc(c.ttl)+'</span><span class="pts">'+c.back.map(function(x){return '<span class="pt">'+esc(x)+'</span>'}).join('')+'</span><span class="hint">再點一下翻回來</span></span></span>';
+    b.addEventListener('click',function(){b.setAttribute('aria-pressed',String(b.getAttribute('aria-pressed')!=='true'))});
+    grid.appendChild(b);
+  });
+  function unlocked(u){
+    if(u==='u2'){for(var i=1;i<=DATA.nchk;i++){if(!st['c'+i])return false}return true}
+    if(u==='u3')return !!st.copied;
+    if(u==='u4')return right()>=DATA.qpass;
+    return !!st[u];
+  }
+  function updateCards(){
+    var n=0;DATA.cards.forEach(function(c){var on=unlocked(c.u);var el=document.getElementById('card-'+c.u);el.classList.toggle('on',on);el.querySelector('.badge').textContent=on?'已解鎖':'未解鎖';if(on)n++});
+    document.getElementById('progText').textContent='已解鎖 '+n+' / 5';document.getElementById('progBar').style.width=(n/5*100)+'%';
+    document.getElementById('cardCount').textContent=n+' / 5';
+  }
+  function claimLabel(b){var on=b.getAttribute('aria-pressed')==='true';b.textContent=on?'已收下技能卡 '+b.dataset.claim.slice(1).padStart(2,'0')+' ✓':b.dataset.label}
+  document.querySelectorAll('[data-claim]').forEach(function(b){var u=b.dataset.claim;b.dataset.label=b.textContent;b.setAttribute('aria-pressed',String(!!st[u]));claimLabel(b);
+    b.addEventListener('click',function(){st[u]=!st[u];b.setAttribute('aria-pressed',String(st[u]));claimLabel(b);save();updateCards()})});
+  document.querySelectorAll('.minichk input').forEach(function(i){i.checked=!!st[i.id];i.addEventListener('change',function(){st[i.id]=i.checked;save();updateCards()})});
+  document.getElementById('resetBtn').addEventListener('click',function(){st={q:{}};save();document.querySelectorAll('.minichk input').forEach(function(i){i.checked=false});document.querySelectorAll('[data-claim]').forEach(function(b){b.setAttribute('aria-pressed','false');claimLabel(b)});renderQuiz();updateCards()});
+  renderQuiz();updateCards();
+})();
+
+</script>
+</body>
+</html>
